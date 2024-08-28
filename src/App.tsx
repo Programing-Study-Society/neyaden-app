@@ -36,17 +36,14 @@ function App() {
           {/* 1電車目 */}
           <div>
             <div className="flex">
-              <h2>10:00</h2>
+              <h2 className="">10:00</h2>
               <h2>発</h2>
               <h2 className="orange">急行</h2>
               <h2>淀屋橋行き</h2>
               <h2 className="red display-none">遅延5分</h2>
             </div>
             <div className="flex">
-              <div className="flex display-none">
-                <h2 className="top red">10:00</h2>
-                <h2 className="top red">発</h2>
-              </div>
+              <h2 className="top red display-none">10:00</h2>
               <h2 className="right red">走れば間に合います</h2>
             </div>
           </div>
@@ -54,17 +51,14 @@ function App() {
           {/* 2電車目 */}
           <div>
             <div className="flex margin">
-              <h2>10:05</h2>
+              <h2 className="correction-line">10:05</h2>
               <h2>発</h2>
               <h2 className="blue">準急</h2>
               <h2>淀屋橋行き</h2>
               <h2 className="red">遅延5分</h2>
             </div>
             <div className="flex">
-              <div className="flex">
-                <h2 className="top red">10:10</h2>
-                <h2 className="top red">発</h2>
-              </div>
+              <h2 className="top red">10:10</h2>
               <h2 className="right yellow">歩きで間に合います</h2>
             </div>
           </div>
@@ -79,17 +73,14 @@ function App() {
           {/* 1電車目 */}
           <div>
             <div className="flex">
-              <h2>9:55</h2>
+              <h2 className="">9:55</h2>
               <h2>発</h2>
               <h2 className="white">普通</h2>
               <h2>三条行き</h2>
               <h2 className="red display-none">遅延5分</h2>
             </div>
             <div className="flex">
-              <div className="flex display-none">
-                <h2 className="top red">10:00</h2>
-                <h2 className="top red">発</h2>
-              </div>
+              <h2 className="top red display-none">10:00</h2>
               <h2 className="right yellow">歩きで間に合います</h2>
             </div>
           </div>
@@ -97,17 +88,14 @@ function App() {
           {/* 2電車目 */}
           <div>
             <div className="flex margin">
-              <h2>9:45</h2>
+              <h2 className="correction-line">9:45</h2>
               <h2>発</h2>
               <h2 className="white">普通</h2>
               <h2>淀屋橋行き</h2>
               <h2 className="red">遅延15分</h2>
             </div>
             <div className="flex">
-              <div className="flex">
-                <h2 className="top red">10:00</h2>
-                <h2 className="top red">発</h2>
-              </div>
+              <h2 className="top red">10:00</h2>
               <h2 className="right red">走れば間に合います</h2>
             </div>
           </div>
