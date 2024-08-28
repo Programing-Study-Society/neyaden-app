@@ -13,7 +13,10 @@ fn greet(name: &str) -> String {
 async fn main() -> anyhow::Result<()> {
 	train_info::get_train_info::get_train_info().await?;
 	tauri::Builder::default()
-		.invoke_handler(tauri::generate_handler![greet])
+		.invoke_handler(tauri::generate_handler![
+			greet,
+			train_info::stab_get_train_info::get_train_info
+		])
 		.run(tauri::generate_context!())?;
 
 	Ok(())
