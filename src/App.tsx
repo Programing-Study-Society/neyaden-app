@@ -4,6 +4,8 @@ import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
 
 function App() {
+  const respons = invoke("greet");
+  console.log(respons);
   return (
     <div>
       {/* ヘッダー */}

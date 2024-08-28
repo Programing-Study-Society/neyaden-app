@@ -8,7 +8,7 @@
   color: white;
   font-family: "notoSansJP-Regular";
   line-height: 0px;
-  font-size:clamp(0px, 3.5vmin, 3vh);
+  font-size:clamp(0px, 3.5vmin, 2.9vh);
 }
 
 .flex {
@@ -35,7 +35,7 @@
 }
 
 .margin {
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
 .top {
