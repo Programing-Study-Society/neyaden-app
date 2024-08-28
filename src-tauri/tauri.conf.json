@@ -21,7 +21,9 @@
       {
         "title": "neyaden-app",
         "width": 540,
-        "height": 960
+        "height": 960,
+        "fullscreen": false,
+        "decorations": true
       }
     ],
     "security": {
