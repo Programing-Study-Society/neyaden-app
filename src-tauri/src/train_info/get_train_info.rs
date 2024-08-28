@@ -7,21 +7,21 @@ const RUNNING_MINUTES: u16 = 6;
 const TIME_FORMAT: &str = "%Y/%m/%d %H:%M:%S %z";
 
 #[derive(Serialize)]
-struct ArrivalInfo {
-	plan_departure_time: String,
-	real_departure_time: String,
-	train_type: String,
-	terminal_station: String,
-	is_delayed: bool,
-	delay_time: String,
-	travel_mode: String,
+pub struct ArrivalInfo {
+	pub plan_departure_time: String,
+	pub real_departure_time: String,
+	pub train_type: String,
+	pub terminal_station: String,
+	pub is_delayed: bool,
+	pub delay_time: String,
+	pub travel_mode: String,
 }
 
 #[derive(Serialize)]
-struct TrainInfo {
-	update_time: String,
-	yodoyabashi_direction: ArrivalInfo,
-	sanjo_direction: ArrivalInfo,
+pub struct TrainInfo {
+	pub update_time: String,
+	pub yodoyabashi_direction: Vec<ArrivalInfo>,
+	pub sanjo_direction: Vec<ArrivalInfo>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -81,6 +81,7 @@ fn find_all_train_after_move(
 			let train_arrival_minutes: i32 = train_arrival_minutes_str.parse().unwrap();
 
 			let student_arrival_time = chrono::Local::now() + Duration::minutes(minutes as i64);
+			println!("{}", chrono::Local::now());
 			// 整形後の時間
 			let train_arrival_time = chrono::DateTime::parse_from_str(
 				&format!(
