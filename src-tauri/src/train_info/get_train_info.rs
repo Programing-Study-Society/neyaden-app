@@ -1,4 +1,4 @@
-use chrono::Duration;
+use chrono::Timelike;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
@@ -28,13 +28,8 @@ pub struct TrainInfo {
 #[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 struct ReceiveStationInfo {
-	station_number: String,
 	station_dep_time: String,
 	station_name_jp: String,
-	station_name_en: String,
-	station_name_zh_tw: String,
-	station_name_zh_cn: String,
-	station_name_ko: String,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -49,8 +44,6 @@ struct ReceiveTrainInfo {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct ReceiveStartTime {
-	file_created_time: String,
-	file_version: String,
 	#[serde(rename = "TrainInfo")]
 	train_info: Vec<ReceiveTrainInfo>,
 }
@@ -58,27 +51,9 @@ struct ReceiveStartTime {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct ReceiveTrainPositionObject {
-	// carsOfTrain
 	delay_minutes: String,
-	// delayMinutesEn
-	// delayMinutesKo
-	// delayMinutesZhCn
-	// delayMinutesZhTw
-	// destStationCode
-	// destStationNameEn
 	dest_station_name_jp: String,
-	// destStationNameKo
-	// destStationNameZhCn
-	// destStationNameZhTw
-	// destStationNumber
-	// lastPassStation
-	// trainNumber
-	// trainTypeEn
-	// trainTypeIcon
 	train_type_jp: String,
-	// trainTypeKo
-	// trainTypeZhCn
-	// trainTypeZhTw
 	wdf_block_no: String,
 }
 
@@ -86,73 +61,57 @@ struct ReceiveTrainPositionObject {
 #[serde(rename_all = "camelCase")]
 struct ReceiveTrainPosition {
 	delay: String,
-	// delay_en: String,
-	// delay_ko: String,
-	// delay_zh_cn: String,
-	// delay_zh_tw: String,
-	// location_col: String,
-	// location_row: String,
 	train_direction: String,
-	// train_icon_type_image_jp: String,
 	train_info_objects: Vec<ReceiveTrainPositionObject>,
-	// train_type_vis_icon_vis: String,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct ReceiveMovementInfo {
-	// file_created_time: String,
-	// file_version: String,
-	// link_num: String,
 	location_objects: Vec<ReceiveTrainPosition>,
 }
 
-fn find_all_train_after_move(train_info: &Vec<ArrivalInfo>, minutes: i64) -> Vec<ArrivalInfo> {
-	train_info
-		.iter()
-		.filter(|train| {
-			// 時間の整形
-			let (train_arrival_hour_str, train_arrival_minutes_str) = train
-				.real_departure_time
-				.split(":")
-				.collect_tuple()
-				.unwrap();
-			let mut train_arrival_hour: i32 = train_arrival_hour_str.parse().unwrap();
-			train_arrival_hour = if train_arrival_hour >= 24 {
-				train_arrival_hour - 24
+// 電車情報の時間をDateTimeにパース
+fn parse_datetime_from_train_time(train_time: &str) -> chrono::DateTime<chrono::FixedOffset> {
+	let now = chrono::Local::now();
+	let (mut train_time_hour, train_time_minutes) = train_time
+		.split(":")
+		.map(|time| time.parse::<i32>().unwrap())
+		.collect_tuple()
+		.unwrap();
+	let mut add_day = 0;
+	train_time_hour = if train_time_hour >= 24 {
+		add_day = if 0 as u32 <= now.hour() && now.hour() <= 5 {
+			0
+		} else {
+			1
+		};
+		train_time_hour - 24
+	} else {
+		train_time_hour
+	};
+	chrono::DateTime::parse_from_str(
+		&format!(
+			"{} {}:{}:0 +0900",
+			&(now + chrono::Duration::days(add_day as i64))
+				.format(&TIME_FORMAT)
+				.to_string()
+				.split(" ")
+				.collect::<Vec<&str>>()[0],
+			if train_time_hour < 10 {
+				format!("0{}", train_time_hour)
 			} else {
-				train_arrival_hour
-			};
-			let train_arrival_minutes: i32 = train_arrival_minutes_str.parse().unwrap();
-
-			let student_arrival_time = chrono::Local::now() + Duration::minutes(minutes as i64);
-			// 整形後の時間
-			let train_arrival_time = chrono::DateTime::parse_from_str(
-				&format!(
-					"{} {}:{}:0 +0900",
-					&student_arrival_time
-						.format(&TIME_FORMAT)
-						.to_string()
-						.split(" ")
-						.collect::<Vec<&str>>()[0],
-					if train_arrival_hour < 10 {
-						format!("0{}", train_arrival_hour)
-					} else {
-						train_arrival_hour.to_string()
-					},
-					if train_arrival_minutes < 10 {
-						format!("0{}", train_arrival_minutes)
-					} else {
-						train_arrival_minutes.to_string()
-					},
-				),
-				&TIME_FORMAT,
-			)
-			.unwrap();
-			return train_arrival_time >= student_arrival_time;
-		})
-		.map(|train| train.clone())
-		.collect::<Vec<ArrivalInfo>>()
+				train_time_hour.to_string()
+			},
+			if train_time_minutes < 10 {
+				format!("0{}", train_time_minutes)
+			} else {
+				train_time_minutes.to_string()
+			},
+		),
+		&TIME_FORMAT,
+	)
+	.unwrap()
 }
 
 fn convert_recieve_train_info_to_arrival_info(
@@ -199,21 +158,31 @@ fn convert_recieve_train_info_to_arrival_info(
 				delay_time: movement_train_info.train_info_objects[0]
 					.delay_minutes
 					.clone(),
-				travel_mode: "歩き".to_string(),
+				travel_mode: "走り".to_string(),
 			};
 		})
 		.collect_vec()
 }
 
-// #[tauri::command]
-pub async fn get_train_info() -> anyhow::Result<()> {
+#[tauri::command]
+pub async fn get_train_info() -> Result<TrainInfo, String> {
 	const TIMETABLE_URL: &str = "https://www.keihan.co.jp/zaisen-up/startTimeList.json";
-	let train_timetable_res = reqwest::get(TIMETABLE_URL).await?.text().await?;
-	let train_timetable = serde_json::from_str::<ReceiveStartTime>(&train_timetable_res)?;
+	let train_timetable_res = reqwest::get(TIMETABLE_URL)
+		.await
+		.map_err(|_| "情報の取得に失敗しました")?
+		.text()
+		.await
+		.map_err(|_| "情報の取得に失敗しました")?;
+	let train_timetable = serde_json::from_str::<ReceiveStartTime>(&train_timetable_res).unwrap();
 
 	const MOVEMENT_INFO_URL: &str = "https://www.keihan.co.jp/zaisen-up/trainPositionList.json";
-	let movement_info_res = reqwest::get(MOVEMENT_INFO_URL).await?.text().await?;
-	let movement_info = serde_json::from_str::<ReceiveMovementInfo>(&movement_info_res)?;
+	let movement_info_res = reqwest::get(MOVEMENT_INFO_URL)
+		.await
+		.map_err(|_| "情報の取得に失敗しました")?
+		.text()
+		.await
+		.map_err(|_| "情報の取得に失敗しました")?;
+	let movement_info = serde_json::from_str::<ReceiveMovementInfo>(&movement_info_res).unwrap();
 
 	// 運行中の電車の番号リスト
 	let wdf_block_num_list = movement_info
@@ -229,7 +198,7 @@ pub async fn get_train_info() -> anyhow::Result<()> {
 		.collect::<Vec<Vec<String>>>()
 		.concat();
 
-	let neyagawa_arrive_train_info_list = train_timetable
+	let mut neyagawa_arrive_train_info_list = train_timetable
 		.train_info
 		.iter()
 		.filter(|train| wdf_block_num_list.contains(&train.wdf_block_no))
@@ -253,34 +222,86 @@ pub async fn get_train_info() -> anyhow::Result<()> {
 				.filter(|station| station.station_name_jp == "寝屋川市")
 				.count() != 0
 		})
+		// 最低走って間に合う必要があるためそれ以上のものだけを取得
+		.filter(|train| {
+			parse_datetime_from_train_time(
+				&train
+					.dia_station_info_objects
+					.iter()
+					.filter(|station| station.station_name_jp == "寝屋川市")
+					.collect::<Vec<&ReceiveStationInfo>>()[0]
+					.station_dep_time,
+			) >= chrono::Local::now() + chrono::Duration::minutes(RUNNING_MINUTES as i64)
+		})
 		.collect::<Vec<ReceiveTrainInfo>>();
+
+	// 日付順にソート
+	neyagawa_arrive_train_info_list.sort_by(|a, b| {
+		let a_arrive_time_string = &a
+			.dia_station_info_objects
+			.iter()
+			.filter(|station| station.station_name_jp == "寝屋川市")
+			.collect::<Vec<&ReceiveStationInfo>>()[0]
+			.station_dep_time;
+		let b_arrive_time_string = &b
+			.dia_station_info_objects
+			.iter()
+			.filter(|station| station.station_name_jp == "寝屋川市")
+			.collect::<Vec<&ReceiveStationInfo>>()[0]
+			.station_dep_time;
+		let a_arrive_time = parse_datetime_from_train_time(&a_arrive_time_string);
+		let b_arrive_time = parse_datetime_from_train_time(&b_arrive_time_string);
+		a_arrive_time.cmp(&b_arrive_time)
+	});
 
 	let neyagawa_arrival_info_list =
 		convert_recieve_train_info_to_arrival_info(&neyagawa_arrive_train_info_list, &movement_info);
 
-	let neyagawa_arrival_train_info = TrainInfo {
+	let mut neyagawa_arrival_train_info = TrainInfo {
 		update_time: format!("{}", chrono::Local::now()),
-		yodoyabashi_direction: find_all_train_after_move(
-			&neyagawa_arrival_info_list
-				.iter()
-				// 淀屋橋方面に絞る
-				.filter(|train| train.train_direction == "1")
-				.map(|arrival_info| arrival_info.clone())
-				.collect::<Vec<ArrivalInfo>>(),
-			RUNNING_MINUTES as i64,
-		),
-		sanjo_direction: find_all_train_after_move(
-			&neyagawa_arrival_info_list
-				.iter()
-				// 淀屋橋方面に絞る
-				.filter(|train| train.train_direction == "0")
-				.map(|arrival_info| arrival_info.clone())
-				.collect::<Vec<ArrivalInfo>>(),
-			RUNNING_MINUTES as i64,
-		),
+		yodoyabashi_direction: neyagawa_arrival_info_list
+			.iter()
+			// 淀屋橋方面に絞る
+			.filter(|train| train.train_direction == "1")
+			.map(|arrival_info| arrival_info.clone())
+			.collect::<Vec<ArrivalInfo>>(),
+		sanjo_direction: neyagawa_arrival_info_list
+			.iter()
+			// 三条方面に絞る
+			.filter(|train| train.train_direction == "0")
+			.map(|arrival_info| arrival_info.clone())
+			.collect::<Vec<ArrivalInfo>>(),
 	};
 
-	println!("{:?}", neyagawa_arrival_train_info);
+	neyagawa_arrival_train_info.yodoyabashi_direction = neyagawa_arrival_train_info
+		.yodoyabashi_direction[..(2usize.min(neyagawa_arrival_train_info.yodoyabashi_direction.len()))]
+		.to_vec();
 
-	Ok(())
+	neyagawa_arrival_train_info
+		.yodoyabashi_direction
+		.iter_mut()
+		.for_each(|arrival_info| {
+			if parse_datetime_from_train_time(&arrival_info.real_departure_time)
+				> (chrono::Local::now() + chrono::Duration::minutes(WALKING_MINUTES as i64))
+			{
+				arrival_info.travel_mode = "歩き".to_string();
+			};
+		});
+
+	neyagawa_arrival_train_info.sanjo_direction = neyagawa_arrival_train_info.sanjo_direction
+		[..(2usize.min(neyagawa_arrival_train_info.sanjo_direction.len() as usize))]
+		.to_vec();
+
+	neyagawa_arrival_train_info
+		.sanjo_direction
+		.iter_mut()
+		.for_each(|arrival_info| {
+			if parse_datetime_from_train_time(&arrival_info.real_departure_time)
+				> (chrono::Local::now() + chrono::Duration::minutes(WALKING_MINUTES as i64))
+			{
+				arrival_info.travel_mode = "歩き".to_string();
+			};
+		});
+
+	Ok(neyagawa_arrival_train_info)
 }
