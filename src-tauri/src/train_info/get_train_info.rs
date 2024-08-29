@@ -68,6 +68,7 @@ struct ReceiveTrainPosition {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct ReceiveMovementInfo {
+	file_created_time: String,
 	location_objects: Vec<ReceiveTrainPosition>,
 }
 
@@ -257,20 +258,11 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 	let neyagawa_arrival_info_list =
 		convert_recieve_train_info_to_arrival_info(&neyagawa_arrive_train_info_list, &movement_info);
 
-	let now = chrono::Local::now();
 	let mut neyagawa_arrival_train_info = TrainInfo {
 		update_time: format!(
 			"{}:{}",
-			if now.hour() < 10 {
-				format!("0{}", now.hour())
-			} else {
-				now.hour().to_string()
-			},
-			if now.minute() < 10 {
-				format!("0{}", now.minute())
-			} else {
-				now.minute().to_string()
-			}
+			&movement_info.file_created_time[8..=9],
+			&movement_info.file_created_time[10..=11]
 		),
 		yodoyabashi_direction: neyagawa_arrival_info_list
 			.iter()
