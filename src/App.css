@@ -1,14 +1,14 @@
 @font-face {
   font-family: "notoSansJP-Regular";
-  src: url("public/fonts/NotoSansJP-Regular.ttf") format("truetype");
+  src: url("/fonts/NotoSansJP-Regular.ttf") format("truetype");
 }
 
-body{
-  background-color:black;
+body {
+  background-color: black;
   color: white;
   font-family: "notoSansJP-Regular";
   line-height: 0px;
-  font-size:clamp(0px, 2.85vmin, 2.9vh);
+  font-size: clamp(0px, 2.85vmin, 2.9vh);
 }
 
 main {
@@ -16,13 +16,13 @@ main {
 }
 
 .flex {
-  display:flex;
+  display: flex;
   flex-wrap: wrap;
   column-gap: 10px;
 }
 
 .flex-right {
-  display:flex;
+  display: flex;
   flex-wrap: wrap;
   column-gap: 10px;
   justify-content: flex-end;
@@ -39,11 +39,11 @@ main {
 }
 
 .margin {
-  margin-top:20px;
+  margin-top: 20px;
 }
 
 .margin10 {
-  margin-top:10px;
+  margin-top: 10px;
 }
 
 .top {
@@ -54,11 +54,11 @@ main {
   align-items: center;
   margin-bottom: 0.3em;
   margin-right: 0.25em;
-  font-size:clamp(0px, 4vmin, 4vh);
+  font-size: clamp(0px, 4vmin, 4vh);
 }
 
 .display-none {
-  display:none;
+  display: none;
 }
 
 .correction-line {
@@ -72,7 +72,7 @@ main {
 }
 
 .white {
-  color:white;
+  color: white;
 }
 
 .pink {
