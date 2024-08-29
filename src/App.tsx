@@ -6,6 +6,9 @@ import "./App.css";
 function App() {
   const respons = invoke("greet");
   console.log(respons);
+  (async () => {
+    console.log(await invoke("get_train_info"));
+  })();
   return (
     <div>
       {/* ヘッダー */}
