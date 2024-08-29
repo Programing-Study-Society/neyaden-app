@@ -95,7 +95,7 @@ fn parse_datetime_from_train_time(train_time: &str) -> chrono::DateTime<chrono::
 		.collect_tuple()
 		.unwrap();
 	let add_day: i64;
-	let is_after_day = 0 as u32 <= now.hour() && now.hour() <= 5;
+	let is_after_day = 0 as u32 <= now.hour() && now.hour() <= 4;
 	if train_time_hour >= 24 {
 		add_day = if is_after_day { 0 } else { 1 };
 		train_time_hour -= 24;
