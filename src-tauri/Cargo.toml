@@ -1,8 +1,8 @@
 [package]
 name = "neyaden-app"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "寝屋川市駅から出発する電車に大阪電気通信大学から向かって間に合う電車を表示するアプリです。"
+authors = ["Shiryu Ogawa", "Haruto Yamazaki"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
