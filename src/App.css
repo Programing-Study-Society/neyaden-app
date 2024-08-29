@@ -3,12 +3,16 @@
   src: url("public/fonts/NotoSansJP-Regular.ttf") format("truetype");
 }
 
-:root{
+body{
   background-color:black;
   color: white;
   font-family: "notoSansJP-Regular";
   line-height: 0px;
-  font-size:clamp(0px, 3.5vmin, 2.9vh);
+  font-size:clamp(0px, 2.85vmin, 2.9vh);
+}
+
+main {
+  margin: 8px;
 }
 
 .flex {
@@ -35,7 +39,11 @@
 }
 
 .margin {
-  margin-top: 20px;
+  margin-top:20px;
+}
+
+.margin10 {
+  margin-top:10px;
 }
 
 .top {
@@ -59,8 +67,16 @@
   text-decoration-style: double;
 }
 
+.black {
+  color: black;
+}
+
 .white {
   color:white;
+}
+
+.pink {
+  color: pink;
 }
 
 .red {
@@ -84,5 +100,5 @@
 }
 
 .purple {
-  color: purple;
+  color: rgb(210, 0, 240);
 }
