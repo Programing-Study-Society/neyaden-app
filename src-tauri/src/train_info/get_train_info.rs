@@ -151,9 +151,9 @@ fn convert_recieve_train_info_to_arrival_info(
 					.clone(),
 				train_direction: movement_train_info.train_direction.clone(),
 				is_delayed: if movement_train_info.delay == "" {
-					true
-				} else {
 					false
+				} else {
+					true
 				},
 				delay_time: movement_train_info.train_info_objects[0]
 					.delay_minutes
@@ -257,8 +257,21 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 	let neyagawa_arrival_info_list =
 		convert_recieve_train_info_to_arrival_info(&neyagawa_arrive_train_info_list, &movement_info);
 
+	let now = chrono::Local::now();
 	let mut neyagawa_arrival_train_info = TrainInfo {
-		update_time: format!("{}", chrono::Local::now()),
+		update_time: format!(
+			"{}:{}",
+			if now.hour() < 10 {
+				format!("0{}", now.hour())
+			} else {
+				now.hour().to_string()
+			},
+			if now.minute() < 10 {
+				format!("0{}", now.minute())
+			} else {
+				now.minute().to_string()
+			}
+		),
 		yodoyabashi_direction: neyagawa_arrival_info_list
 			.iter()
 			// 淀屋橋方面に絞る
