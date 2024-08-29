@@ -28,7 +28,6 @@ function App() {
       });
   }
 
-  // メイン処理部分
   return (
     <div>
       {/* ヘッダー */}

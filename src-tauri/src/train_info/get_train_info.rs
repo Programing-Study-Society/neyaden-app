@@ -68,6 +68,7 @@ struct ReceiveTrainPosition {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct ReceiveMovementInfo {
+	file_created_time: String,
 	location_objects: Vec<ReceiveTrainPosition>,
 }
 
@@ -151,9 +152,9 @@ fn convert_recieve_train_info_to_arrival_info(
 					.clone(),
 				train_direction: movement_train_info.train_direction.clone(),
 				is_delayed: if movement_train_info.delay == "" {
-					true
-				} else {
 					false
+				} else {
+					true
 				},
 				delay_time: movement_train_info.train_info_objects[0]
 					.delay_minutes
@@ -258,7 +259,11 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 		convert_recieve_train_info_to_arrival_info(&neyagawa_arrive_train_info_list, &movement_info);
 
 	let mut neyagawa_arrival_train_info = TrainInfo {
-		update_time: format!("{}", chrono::Local::now()),
+		update_time: format!(
+			"{}:{}",
+			&movement_info.file_created_time[8..=9],
+			&movement_info.file_created_time[10..=11]
+		),
 		yodoyabashi_direction: neyagawa_arrival_info_list
 			.iter()
 			// 淀屋橋方面に絞る
