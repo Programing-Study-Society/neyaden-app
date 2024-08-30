@@ -148,25 +148,43 @@ fn convert_recieve_train_info_to_arrival_info(
 						})
 						.count() != 0
 				})
-				.collect::<Vec<_>>()[0];
+				.collect::<Vec<_>>();
+
+			let exist_bound_info = movement_train_info.len() != 0;
 			return ArrivalInfo {
 				plan_departure_time: neyagawa_arrival_info.station_dep_time.clone(),
 				real_departure_time: neyagawa_arrival_info.station_dep_time.clone(),
-				train_type: movement_train_info.train_info_objects[0]
-					.train_type_jp
-					.clone(),
-				terminal_station: movement_train_info.train_info_objects[0]
-					.dest_station_name_jp
-					.clone(),
-				train_direction: movement_train_info.train_direction.clone(),
-				is_delayed: if movement_train_info.delay == "" {
+				train_type: if exist_bound_info {
+					movement_train_info[0].train_info_objects[0]
+						.train_type_jp
+						.clone()
+				} else {
+					String::from("")
+				},
+				terminal_station: if exist_bound_info {
+					movement_train_info[0].train_info_objects[0]
+						.dest_station_name_jp
+						.clone()
+				} else {
+					String::from("")
+				},
+				train_direction: if exist_bound_info {
+					movement_train_info[0].train_direction.clone()
+				} else {
+					String::from("")
+				},
+				is_delayed: if !exist_bound_info || movement_train_info[0].delay == "" {
 					false
 				} else {
 					true
 				},
-				delay_time: movement_train_info.train_info_objects[0]
-					.delay_minutes
-					.clone(),
+				delay_time: if exist_bound_info {
+					movement_train_info[0].train_info_objects[0]
+						.delay_minutes
+						.clone()
+				} else {
+					String::from("")
+				},
 				travel_mode: "走り".to_string(),
 			};
 		})
@@ -193,27 +211,11 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 		.map_err(|_| "情報の取得に失敗しました")?;
 	let movement_info = serde_json::from_str::<ReceiveMovementInfo>(&movement_info_res).unwrap();
 
-	// 運行中の電車の番号リスト
-	let wdf_block_num_list = movement_info
-		.location_objects
-		.iter()
-		.map(|location_object| {
-			location_object
-				.train_info_objects
-				.iter()
-				.map(|train| train.wdf_block_no.clone())
-				.collect::<Vec<String>>()
-		})
-		.collect::<Vec<Vec<String>>>()
-		.concat();
-
 	let mut neyagawa_arrive_train_info_list = train_timetable
 		.train_info
 		.iter()
-		// 今動いている電車に絞る
-		.filter(|train| wdf_block_num_list.contains(&train.wdf_block_no))
 		// 止まらない駅を除く
-		.map(move |train| ReceiveTrainInfo {
+		.map(|train| ReceiveTrainInfo {
 			wdf_block_no: train.wdf_block_no.clone(),
 			ext_train: train.ext_train.clone(),
 			premium_car: train.premium_car.clone(),
@@ -249,12 +251,22 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 		a_arrive_time.cmp(&b_arrive_time)
 	});
 
-	let neyagawa_arrival_info_list =
+	let mut neyagawa_arrival_info_list =
 		convert_recieve_train_info_to_arrival_info(&neyagawa_arrive_train_info_list, &movement_info)
 			.iter()
 			.filter(|arrival_info| arrival_info.terminal_station != "寝屋川市駅")
 			.map(|arrival_info| arrival_info.clone())
 			.collect::<Vec<ArrivalInfo>>();
+
+	neyagawa_arrival_info_list
+		.iter_mut()
+		.for_each(|arrival_info| {
+			if parse_datetime_from_train_time(&arrival_info.real_departure_time)
+				> (chrono::Local::now() + chrono::Duration::minutes(WALKING_MINUTES as i64))
+			{
+				arrival_info.travel_mode = "歩き".to_string();
+			};
+		});
 
 	let mut neyagawa_arrival_train_info = TrainInfo {
 		update_time: format!(
@@ -280,31 +292,9 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 		.yodoyabashi_direction[..(2usize.min(neyagawa_arrival_train_info.yodoyabashi_direction.len()))]
 		.to_vec();
 
-	neyagawa_arrival_train_info
-		.yodoyabashi_direction
-		.iter_mut()
-		.for_each(|arrival_info| {
-			if parse_datetime_from_train_time(&arrival_info.real_departure_time)
-				> (chrono::Local::now() + chrono::Duration::minutes(WALKING_MINUTES as i64))
-			{
-				arrival_info.travel_mode = "歩き".to_string();
-			};
-		});
-
 	neyagawa_arrival_train_info.sanjo_direction = neyagawa_arrival_train_info.sanjo_direction
 		[..(2usize.min(neyagawa_arrival_train_info.sanjo_direction.len() as usize))]
 		.to_vec();
-
-	neyagawa_arrival_train_info
-		.sanjo_direction
-		.iter_mut()
-		.for_each(|arrival_info| {
-			if parse_datetime_from_train_time(&arrival_info.real_departure_time)
-				> (chrono::Local::now() + chrono::Duration::minutes(WALKING_MINUTES as i64))
-			{
-				arrival_info.travel_mode = "歩き".to_string();
-			};
-		});
 
 	Ok(neyagawa_arrival_train_info)
 }
