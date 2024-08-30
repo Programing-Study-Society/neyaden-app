@@ -1,11 +1,11 @@
-use super::get_train_info::{ArrivalInfo, TrainInfo};
+use super::get_train_info::{DepartureInfo, TrainInfo};
 
 #[tauri::command]
 pub fn success_get_train_info() -> Result<TrainInfo, String> {
 	Ok(TrainInfo {
 		update_time: String::from("2024-08-26T09:30+09:00"),
 		yodoyabashi_direction: vec![
-			ArrivalInfo {
+            DepartureInfo {
 				plan_departure_time: String::from("2024-08-26T09:45:00+09:00"),
 				real_departure_time: String::from("2024-08-26T09:45:00+09:00"),
 				train_type: String::from("急行"),
@@ -15,7 +15,7 @@ pub fn success_get_train_info() -> Result<TrainInfo, String> {
 				delay_time: String::from("00:00"),
 				travel_mode: String::from("走り"),
 			},
-			ArrivalInfo {
+            DepartureInfo {
 				plan_departure_time: String::from("2024-08-26T09:50:00+09:00"),
 				real_departure_time: String::from("2024-08-26T09:55:00+09:00"),
 				train_type: String::from("準急"),
@@ -27,7 +27,7 @@ pub fn success_get_train_info() -> Result<TrainInfo, String> {
 			},
 		],
 		sanjo_direction: vec![
-			ArrivalInfo {
+            DepartureInfo {
 				plan_departure_time: String::from("2024-08-26T09:15:00+09:00"),
 				real_departure_time: String::from("2024-08-26T09:42:00+09:00"),
 				train_type: String::from("普通"),
@@ -37,7 +37,7 @@ pub fn success_get_train_info() -> Result<TrainInfo, String> {
 				delay_time: String::from("00:27"),
 				travel_mode: String::from("走り"),
 			},
-			ArrivalInfo {
+            DepartureInfo {
 				plan_departure_time: String::from("2024-08-26T09:45:00+09:00"),
 				real_departure_time: String::from("2024-08-26T09:45:00+09:00"),
 				train_type: String::from("普通"),
