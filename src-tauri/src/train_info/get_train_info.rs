@@ -80,15 +80,6 @@ fn find_neyagawa_station_info(
 		}
 	}
 	None
-	// let neyagawa_station = station_list
-	// 	.iter()
-	// 	.filter(|station| station.station_name_jp == "寝屋川市")
-	// 	.collect::<Vec<&ReceiveStationInfo>>();
-	// if neyagawa_station.len() == 0 {
-	// 	None
-	// } else {
-	// 	Some(neyagawa_station[0])
-	// }
 }
 
 fn zero_padding(time_num: i32) -> String {
@@ -178,13 +169,6 @@ fn convert_receive_train_info_to_arrival_info(
 						}
 					}
 					false
-					// movement_info_train
-					// 	.train_info_objects
-					// 	.iter()
-					// 	.filter(|train_position_object| {
-					// 		train_position_object.wdf_block_no == train.wdf_block_no
-					// 	})
-					// 	.count() != 0
 				})
 				.collect::<Vec<_>>();
 
