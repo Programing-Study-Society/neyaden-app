@@ -86,6 +86,14 @@ fn filter_neyagawa_station_info(
 	}
 }
 
+fn zero_padding(time_num: i32) -> String {
+	if time_num < 10 {
+		format!("0{}", time_num)
+	} else {
+		time_num.to_string()
+	}
+}
+
 // 電車情報の時間をDateTimeにパース
 fn parse_datetime_from_train_time(train_time: &str) -> chrono::DateTime<chrono::FixedOffset> {
 	let now = chrono::Local::now();
@@ -110,16 +118,8 @@ fn parse_datetime_from_train_time(train_time: &str) -> chrono::DateTime<chrono::
 				.to_string()
 				.split(" ")
 				.collect::<Vec<&str>>()[0],
-			if train_time_hour < 10 {
-				format!("0{}", train_time_hour)
-			} else {
-				train_time_hour.to_string()
-			},
-			if train_time_minutes < 10 {
-				format!("0{}", train_time_minutes)
-			} else {
-				train_time_minutes.to_string()
-			},
+			zero_padding(train_time_hour),
+			zero_padding(train_time_minutes),
 		),
 		&TIME_FORMAT,
 	)
@@ -130,6 +130,37 @@ fn convert_recieve_train_info_to_arrival_info(
 	train_info_list: &Vec<ReceiveTrainInfo>,
 	movement_info: &ReceiveMovementInfo,
 ) -> Vec<ArrivalInfo> {
+	/*
+		始発駅：{"枚方市", "出町柳", "寝屋川市", "三条", "樟葉", "淀屋橋", "中之島", "淀"}
+		終点駅：{"出町柳", "淀", "枚方市", "三条", "樟葉", "中之島", "淀屋橋", "寝屋川市", "守口市"}
+	*/
+	struct DirectionAndStartStation {
+		start_station: String,
+		direction: String,
+	}
+	const START_STATION: [&str; 8] = [
+		"枚方市",
+		"出町柳",
+		"寝屋川市",
+		"三条",
+		"樟葉",
+		"淀屋橋",
+		"中之島",
+		"淀",
+	];
+	// 淀屋橋方面 : 1, 出町柳方面 : 0
+	const DIRECTION_LIST: [&str; 8] = ["1", "1", "0", "1", "1", "0", "0", "1"];
+	let direction_list_from_station = START_STATION
+		.iter()
+		.zip(DIRECTION_LIST.iter())
+		.map(|start_station_and_direction| {
+			return DirectionAndStartStation {
+				start_station: start_station_and_direction.0.to_string(),
+				direction: start_station_and_direction.1.to_string(),
+			};
+		})
+		.collect::<Vec<DirectionAndStartStation>>();
+
 	train_info_list
 		.iter()
 		// 送信する形式に変更する
@@ -151,8 +182,19 @@ fn convert_recieve_train_info_to_arrival_info(
 				.collect::<Vec<_>>();
 
 			let exist_bound_info = movement_train_info.len() != 0;
+			let plan_departure_time =
+				parse_datetime_from_train_time(&neyagawa_arrival_info.station_dep_time)
+					- chrono::Duration::minutes(if exist_bound_info && movement_train_info[0].delay != "" {
+						movement_train_info[0].delay.parse::<i64>().unwrap()
+					} else {
+						0
+					});
 			return ArrivalInfo {
-				plan_departure_time: neyagawa_arrival_info.station_dep_time.clone(),
+				plan_departure_time: format!(
+					"{}:{}",
+					zero_padding(plan_departure_time.hour() as i32),
+					zero_padding(plan_departure_time.minute() as i32)
+				),
 				real_departure_time: neyagawa_arrival_info.station_dep_time.clone(),
 				train_type: if exist_bound_info {
 					movement_train_info[0].train_info_objects[0]
@@ -171,7 +213,12 @@ fn convert_recieve_train_info_to_arrival_info(
 				train_direction: if exist_bound_info {
 					movement_train_info[0].train_direction.clone()
 				} else {
-					String::from("")
+					direction_list_from_station
+						.iter()
+						.filter(|ele| ele.start_station == train.dia_station_info_objects[0].station_name_jp)
+						.collect::<Vec<&DirectionAndStartStation>>()[0]
+						.direction
+						.clone()
 				},
 				is_delayed: if !exist_bound_info || movement_train_info[0].delay == "" {
 					false
@@ -234,8 +281,9 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 				&filter_neyagawa_station_info(&train.dia_station_info_objects)
 					.unwrap()
 					.station_dep_time,
-			) >= chrono::Local::now() + chrono::Duration::minutes(RUNNING_MINUTES as i64)
+			) > chrono::Local::now() + chrono::Duration::minutes(RUNNING_MINUTES as i64)
 		})
+		.map(|train| train.clone())
 		.collect::<Vec<ReceiveTrainInfo>>();
 
 	// 日付順にソート
@@ -254,7 +302,7 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 	let mut neyagawa_arrival_info_list =
 		convert_recieve_train_info_to_arrival_info(&neyagawa_arrive_train_info_list, &movement_info)
 			.iter()
-			.filter(|arrival_info| arrival_info.terminal_station != "寝屋川市駅")
+			.filter(|arrival_info| arrival_info.terminal_station != "寝屋川市")
 			.map(|arrival_info| arrival_info.clone())
 			.collect::<Vec<ArrivalInfo>>();
 
@@ -267,6 +315,12 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 				arrival_info.travel_mode = "歩き".to_string();
 			};
 		});
+
+	neyagawa_arrival_info_list.sort_by(|a, b| {
+		let a_arrive_time = parse_datetime_from_train_time(&a.real_departure_time);
+		let b_arrive_time = parse_datetime_from_train_time(&b.real_departure_time);
+		a_arrive_time.cmp(&b_arrive_time)
+	});
 
 	let mut neyagawa_arrival_train_info = TrainInfo {
 		update_time: format!(
