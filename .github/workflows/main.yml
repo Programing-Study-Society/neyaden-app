@@ -22,7 +22,7 @@ jobs:
           - platform: 'windows-latest'
             args: ''
           - platform: 'linux/arm64'
-            args: '--target arm-unknown-linux-gnueabihf'
+            args: '--target aarch64-unknown-linux-gnu'
 
     runs-on: ${{ matrix.platform }}
     steps:
