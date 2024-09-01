@@ -37,6 +37,7 @@ struct ReceiveStationInfo {
 struct ReceiveTrainInfo {
 	wdf_block_no: String,
 	ext_train: String,
+	train_car: String,
 	premium_car: String,
 	dia_station_info_objects: Vec<ReceiveStationInfo>,
 }
@@ -162,13 +163,18 @@ fn convert_receive_train_info_to_arrival_info(
 			let movement_train_info = movement_info
 				.location_objects
 				.iter()
-				.filter(|movement_info_train| {
-					for train_position_object in &movement_info_train.train_info_objects {
-						if train_position_object.wdf_block_no == train.wdf_block_no {
-							return true;
-						}
-					}
-					false
+				.filter(|movement_train_info| {
+					// for train_position_object in &movement_info_train.train_info_objects {
+					// 	if train_position_object.wdf_block_no == train.wdf_block_no {
+					// 		return true;
+					// 	}
+					// }
+					// false
+					let train_position_objects = movement_train_info.train_info_objects.iter().filter(|train_position_object| train_position_object.wdf_block_no == train.wdf_block_no).collect::<Vec<&ReceiveTrainPositionObject>>();
+					if train_position_objects.len() > 1 {
+						println!("wdf: {} at {}", train_position_objects[0].wdf_block_no, chrono::Local::now());
+						true
+					} else if train_position_objects.len() == 1 {true} else {false}
 				})
 				.collect::<Vec<_>>();
 
@@ -245,10 +251,13 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 	let mut train_info_list_only_neyagawa = train_timetable
 		.train_info
 		.iter()
+		// 走らない電車を除く
+		.filter(|train| train.train_car != "00000")
 		// 止まらない駅を除く
 		.map(|train| ReceiveTrainInfo {
 			wdf_block_no: train.wdf_block_no.clone(),
 			ext_train: train.ext_train.clone(),
+			train_car: train.train_car.clone(),
 			premium_car: train.premium_car.clone(),
 			dia_station_info_objects: train
 				.dia_station_info_objects
