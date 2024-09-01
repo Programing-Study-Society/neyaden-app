@@ -1,5 +1,6 @@
 name: 'publish'
 on:
+  workflow_dispatch:
   push:
     branches:
       - main # 簡単のため main に変更
