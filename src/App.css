@@ -85,7 +85,7 @@ main {
 
 footer {
   position: absolute;
-  top:calc(99% - var(--footer-height) - var(--footer-font-size) * 2);
+  top:calc(98% - var(--footer-height) - var(--footer-font-size) * 2);
   right: 3%;
 }
 
