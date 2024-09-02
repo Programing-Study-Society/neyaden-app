@@ -41,10 +41,11 @@ function App() {
             <h1 className="direction-name">淀屋橋・中之島線</h1>
             <h3>方面</h3>
           </div>
-          {/* 電車情報 */}
-          {trainInfoList?.yodoyabashi_direction.map((train) => (
-            <TrainInfoComp trainInfo={train} />
-          ))}
+          {/* 1電車目 */}
+          <TrainInfoComp trainInfo={trainInfoList?.yodoyabashi_direction[0]} />
+
+          {/* 2電車目 */}
+          <TrainInfoComp trainInfo={trainInfoList?.yodoyabashi_direction[1]} />
         </div>
         <span className="border"></span>
 
@@ -54,10 +55,11 @@ function App() {
             <h1 className="direction-name">三条・出町柳</h1>
             <h3>方面</h3>
           </div>
-          {/* 電車情報 */}
-          {trainInfoList?.sanjo_direction.map((train) => (
-            <TrainInfoComp trainInfo={train} />
-          ))}
+          {/* 1電車目 */}
+          <TrainInfoComp trainInfo={trainInfoList?.sanjo_direction[0]} />
+
+          {/* 2電車目 */}
+          <TrainInfoComp trainInfo={trainInfoList?.sanjo_direction[1]} />
         </div>
         <span className="border"></span>
         <ErrorModal isOpen={open} handleClose={handleClose} />
