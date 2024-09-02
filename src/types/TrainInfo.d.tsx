@@ -10,7 +10,9 @@ type TRAIN_TYPE =
   | "準急"
   | "通勤準急"
   | "区間急行"
-  | "普通";
+  | "普通"
+  | "通勤急行"
+  | "臨時列車";
 
 type TRAVEl_MODE = "歩き" | "走り";
 
@@ -53,6 +55,10 @@ export const GetTrainTypeColor = function (trainType: TRAIN_TYPE) {
     case "区間急行":
       return "green";
     case "普通":
+      return "white";
+    case "通勤急行":
+      return "orange";
+    case "臨時列車":
       return "white";
     default:
       return "white";

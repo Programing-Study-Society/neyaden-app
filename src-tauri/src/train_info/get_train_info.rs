@@ -100,7 +100,8 @@ fn parse_datetime_from_train_time(train_time: &str) -> chrono::DateTime<chrono::
 		.collect_tuple()
 		.unwrap();
 	let add_day: i64;
-	let is_after_day = now.hour() < 4;
+	// 1日のファイル更新開始が4時40分
+	let is_after_day = now.hour() < 4 || (now.hour() == 4 && now.minute() < 40);
 	if train_time_hour >= 24 {
 		add_day = if is_after_day { 0 } else { 1 };
 		train_time_hour -= 24;
