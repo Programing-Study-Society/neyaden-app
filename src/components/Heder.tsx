@@ -9,7 +9,7 @@ interface Props {
 function Heder({ updateTime, Get }: Props) {
   return (
     <header>
-      <div className="flex border">
+      <div className="flex">
         <div>
           <div className="flex">
             <h2>寝屋川市駅</h2>
