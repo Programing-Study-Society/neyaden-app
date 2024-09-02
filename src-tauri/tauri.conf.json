@@ -6,7 +6,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "neyaden-app",
+    "productName": "電車に間に合え！運行状況掲示板",
     "version": "0.1.0"
   },
   "tauri": {
@@ -19,9 +19,11 @@
     },
     "windows": [
       {
-        "title": "neyaden-app",
-        "width": 800,
-        "height": 600
+        "title": "電車に間に合え！運行状況掲示板",
+        "width": 540,
+        "height": 960,
+        "fullscreen": false,
+        "decorations": true
       }
     ],
     "security": {
@@ -37,7 +39,12 @@
         "icons/128x128@2x.png",
         "icons/icon.icns",
         "icons/icon.ico"
-      ]
+      ],
+      "windows": {
+        "wix": {
+          "language": "ja-JP"
+        }
+      } 
     }
   }
 }

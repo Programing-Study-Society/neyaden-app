@@ -1,51 +1,69 @@
 import { useState } from "react";
-import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/tauri";
+import { TrainInfoList } from "./types/TrainInfo.d.tsx";
+import ErrorModal from "./components/ErrorModal.tsx";
+import TrainInfoComp from "./components/TrainInfoComp.tsx";
+import Heder from "./components/Heder.tsx";
+import Footer from "./components/Footer.tsx";
 import "./App.css";
 
+// メイン実装部分
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  // 変数定義
+  const [trainInfoList, setTrainInfoList] = useState<TrainInfoList>();
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke("greet", { name }));
+  // 電車情報を取得する関数
+  function get() {
+    invoke<TrainInfoList>("get_train_info")
+      .then((res) => {
+        console.log(res);
+        setTrainInfoList(res);
+        handleClose();
+      })
+      .catch((e) => {
+        console.log(e);
+        handleOpen();
+      });
   }
 
   return (
-    <div className="container">
-      <h1>Welcome to Tauri!</h1>
+    <div style={{ minHeight: "100%" }}>
+      {/* ヘッダー */}
+      <Heder updateTime={trainInfoList?.update_time} Get={get} />
+      <span className="border"></span>
+      <main>
+        {/* 淀屋橋・中之島線方面 */}
+        <div>
+          <div className="flex-right">
+            <h1 className="direction-name">淀屋橋・中之島線</h1>
+            <h3>方面</h3>
+          </div>
+          {/* 電車情報 */}
+          {trainInfoList?.yodoyabashi_direction.map((train) => (
+            <TrainInfoComp trainInfo={train} />
+          ))}
+        </div>
+        <span className="border"></span>
 
-      <div className="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-
-      <p>{greetMsg}</p>
+        {/* 三条・出町柳方面 */}
+        <div>
+          <div className="flex-right">
+            <h1 className="direction-name">三条・出町柳</h1>
+            <h3>方面</h3>
+          </div>
+          {/* 電車情報 */}
+          {trainInfoList?.sanjo_direction.map((train) => (
+            <TrainInfoComp trainInfo={train} />
+          ))}
+        </div>
+        <span className="border"></span>
+        <ErrorModal isOpen={open} handleClose={handleClose} />
+      </main>
+      {/* フッター */}
+      <Footer />
     </div>
   );
 }
