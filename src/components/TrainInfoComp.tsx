@@ -34,7 +34,7 @@ function TrainInfoComp({ trainInfo }: { trainInfo: TrainInfo | undefined }) {
           {trainInfo.real_departure_time}
         </h2>
         <h2 className={"right " + GetTravelModeColor(trainInfo.travel_mode)}>
-          {GetTravelMode(trainInfo.travel_mode)}
+          {`あと${trainInfo.arrival_time}分　` + GetTravelMode(trainInfo.travel_mode)}
         </h2>
       </div>
     </div>

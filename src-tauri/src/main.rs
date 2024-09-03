@@ -15,8 +15,8 @@ async fn main() -> anyhow::Result<()> {
 		.invoke_handler(tauri::generate_handler![
 			greet,
 			train_info::get_train_info::get_train_info,
-			train_info::stab_get_train_info::success_get_train_info,
-			train_info::stab_get_train_info::failed_get_train_info,
+			// train_info::stab_get_train_info::success_get_train_info,
+			// train_info::stab_get_train_info::failed_get_train_info,
 		])
 		.run(tauri::generate_context!())?;
 
