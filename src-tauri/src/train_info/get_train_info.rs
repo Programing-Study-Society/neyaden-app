@@ -190,18 +190,7 @@ fn convert_receive_train_info_to_arrival_info(
 							train_position_object.wdf_block_no == train.wdf_block_no
 						})
 						.collect::<Vec<&ReceiveTrainPositionObject>>();
-					match train_position_objects.len() {
-						len if len > 1 => {
-							println!(
-								"wdf: {} at {}",
-								train_position_objects[0].wdf_block_no,
-								chrono::Local::now()
-							);
-							true
-						}
-						1 => true,
-						_ => false,
-					}
+					!train_position_objects.is_empty()
 				})
 				.collect::<Vec<_>>();
 
@@ -297,7 +286,6 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 	.await
 	.map_err(|_| "情報の取得に失敗しました")?;
 	let delay_xml = serde_xml_rs::from_str::<ReceiveDelayInfo>(&delay_xml_res).unwrap();
-	println!("{:?}", &delay_xml);
 
 	let mut train_info_list_only_neyagawa = train_timetable
 		.train_info
