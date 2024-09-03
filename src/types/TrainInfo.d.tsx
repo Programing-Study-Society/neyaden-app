@@ -19,6 +19,7 @@ type TRAVEl_MODE = "歩き" | "走り";
 export interface TrainInfo {
   plan_departure_time: string;
   real_departure_time: string;
+  arrival_time: string;
   train_type: TRAIN_TYPE;
   terminal_station: string;
   is_delayed: boolean;
