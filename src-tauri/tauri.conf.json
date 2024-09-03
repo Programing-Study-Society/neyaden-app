@@ -20,8 +20,8 @@
     "windows": [
       {
         "title": "neyaden",
-        "width": 540,
-        "height": 960,
+        "width": 360,
+        "height": 640,
         "fullscreen": false,
         "decorations": true
       }

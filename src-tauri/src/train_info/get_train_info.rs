@@ -1,4 +1,4 @@
-use chrono::Timelike;
+use chrono::{Timelike};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
@@ -10,6 +10,7 @@ const TIME_FORMAT: &str = "%Y/%m/%d %H:%M:%S %z";
 pub struct DepartureInfo {
 	pub plan_departure_time: String,
 	pub real_departure_time: String,
+	pub arrival_time: String,
 	pub train_type: String,
 	pub terminal_station: String,
 	pub train_direction: String,
@@ -23,6 +24,7 @@ pub struct TrainInfo {
 	pub update_time: String,
 	pub yodoyabashi_direction: Vec<DepartureInfo>,
 	pub sanjo_direction: Vec<DepartureInfo>,
+	pub delay_msg: String,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -72,9 +74,29 @@ struct ReceiveMovementInfo {
 	location_objects: Vec<ReceiveTrainPosition>,
 }
 
-fn find_neyagawa_station_info(
-	station_list: &[ReceiveStationInfo],
-) -> Option<&ReceiveStationInfo> {
+/* 遅延情報等の情報ファイルリスト */
+#[derive(Deserialize, Debug)]
+struct ReceiveInfoFiles {
+	#[serde(rename="traininfo")]
+	train_info: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct ReceiveDelayInfo {
+    info: Info,
+}
+
+#[derive(Debug, Deserialize)]
+struct Info {
+    HPDelivery: HPDelivery,
+}
+
+#[derive(Debug, Deserialize)]
+struct HPDelivery {
+    msg: String,
+}
+
+fn find_neyagawa_station_info(station_list: &[ReceiveStationInfo]) -> Option<&ReceiveStationInfo> {
 	for station in station_list {
 		if station.station_name_jp == "寝屋川市" {
 			return Some(station);
@@ -171,11 +193,25 @@ fn convert_receive_train_info_to_arrival_info(
 					// 	}
 					// }
 					// false
-					let train_position_objects = movement_train_info.train_info_objects.iter().filter(|train_position_object| train_position_object.wdf_block_no == train.wdf_block_no).collect::<Vec<&ReceiveTrainPositionObject>>();
+					let train_position_objects = movement_train_info
+						.train_info_objects
+						.iter()
+						.filter(|train_position_object| {
+							train_position_object.wdf_block_no == train.wdf_block_no
+						})
+						.collect::<Vec<&ReceiveTrainPositionObject>>();
 					if train_position_objects.len() > 1 {
-						println!("wdf: {} at {}", train_position_objects[0].wdf_block_no, chrono::Local::now());
+						println!(
+							"wdf: {} at {}",
+							train_position_objects[0].wdf_block_no,
+							chrono::Local::now()
+						);
 						true
-					} else if train_position_objects.len() == 1 {true} else {false}
+					} else if train_position_objects.len() == 1 {
+						true
+					} else {
+						false
+					}
 				})
 				.collect::<Vec<_>>();
 
@@ -194,15 +230,20 @@ fn convert_receive_train_info_to_arrival_info(
 					zero_padding(plan_departure_time.minute() as i32)
 				),
 				real_departure_time: neyagawa_arrival_info.station_dep_time.clone(),
+				arrival_time: (parse_datetime_from_train_time(&neyagawa_arrival_info.station_dep_time)
+					.naive_local()
+					- chrono::Local::now().naive_local())
+				.num_minutes()
+				.to_string(),
 				train_type: match exist_bound_info {
 					true => movement_train_info[0].train_info_objects[0]
 						.train_type_jp
 						.clone(),
 					false => String::from(""),
 				},
-				terminal_station: train
-					.dia_station_info_objects[train.dia_station_info_objects.len() - 1]
-					.station_name_jp.clone(),
+				terminal_station: train.dia_station_info_objects[train.dia_station_info_objects.len() - 1]
+					.station_name_jp
+					.clone(),
 				train_direction: match exist_bound_info {
 					true => movement_train_info[0].train_direction.clone(),
 					false => direction_list_from_station
@@ -210,7 +251,7 @@ fn convert_receive_train_info_to_arrival_info(
 						.filter(|ele| ele.start_station == train.dia_station_info_objects[0].station_name_jp)
 						.collect::<Vec<&DirectionAndStartStation>>()[0]
 						.direction
-						.clone()
+						.clone(),
 				},
 				is_delayed: if exist_bound_info && movement_train_info[0].delay != "" {
 					true
@@ -248,6 +289,25 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 		.await
 		.map_err(|_| "情報の取得に失敗しました")?;
 	let movement_info = serde_json::from_str::<ReceiveMovementInfo>(&movement_info_res).unwrap();
+
+	const INFO_FILES_URL: &str = "https://www.keihan.co.jp/tinfo/05-flist/FileList.xml";
+	let info_files_res = reqwest::get(INFO_FILES_URL)
+		.await
+		.map_err(|_| "情報の取得に失敗しました")?
+		.text()
+		.await
+		.map_err(|_| "情報の取得に失敗しました")?;
+
+	let info_files = serde_xml_rs::from_str::<ReceiveInfoFiles>(&info_files_res).unwrap();
+	let delay_xml_res = reqwest::get(format!("{}{}", "https://www.keihan.co.jp/tinfo/01-traininfo/", &info_files.train_info))
+		.await
+		.map_err(|_| "情報の取得に失敗しました")?
+		.text()
+		.await
+		.map_err(|_| "情報の取得に失敗しました")?;
+	let delay_xml = serde_xml_rs::from_str::<ReceiveDelayInfo>(&delay_xml_res).unwrap();
+	println!("{:?}", &delay_xml);
+	
 
 	let mut train_info_list_only_neyagawa = train_timetable
 		.train_info
@@ -300,15 +360,13 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 			.map(|arrival_info| arrival_info.clone())
 			.collect::<Vec<DepartureInfo>>();
 
-	train_dep_info_list
-		.iter_mut()
-		.for_each(|arrival_info| {
-			if parse_datetime_from_train_time(&arrival_info.real_departure_time)
-				> (chrono::Local::now() + chrono::Duration::minutes(WALKING_MINUTES as i64))
-			{
-				arrival_info.travel_mode = "歩き".to_string();
-			};
-		});
+	train_dep_info_list.iter_mut().for_each(|arrival_info| {
+		if parse_datetime_from_train_time(&arrival_info.real_departure_time)
+			> (chrono::Local::now() + chrono::Duration::minutes(WALKING_MINUTES as i64))
+		{
+			arrival_info.travel_mode = "歩き".to_string();
+		};
+	});
 
 	train_dep_info_list.sort_by(|a, b| {
 		let a_arrive_time = parse_datetime_from_train_time(&a.real_departure_time);
@@ -334,6 +392,7 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 			.filter(|train| train.train_direction == "0")
 			.map(|arrival_info| arrival_info.clone())
 			.collect::<Vec<DepartureInfo>>(),
+		delay_msg: delay_xml.info.HPDelivery.msg.clone(),
 	};
 
 	train_dep_info_from_neyagawa.yodoyabashi_direction = train_dep_info_from_neyagawa

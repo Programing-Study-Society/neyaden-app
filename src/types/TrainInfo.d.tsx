@@ -19,6 +19,7 @@ type TRAVEl_MODE = "歩き" | "走り";
 export interface TrainInfo {
   plan_departure_time: string;
   real_departure_time: string;
+  arrival_time: string;
   train_type: TRAIN_TYPE;
   terminal_station: string;
   is_delayed: boolean;
@@ -28,6 +29,7 @@ export interface TrainInfo {
 
 export interface TrainInfoList {
   update_time: string;
+  delay_msg: string;
   yodoyabashi_direction: TrainInfo[];
   sanjo_direction: TrainInfo[];
 }
@@ -68,7 +70,7 @@ export const GetTrainTypeColor = function (trainType: TRAIN_TYPE) {
 export const GetTravelMode = function (mode: TRAVEl_MODE) {
   switch (mode) {
     case "歩き":
-      return "歩きで間に合います";
+      return "歩いても間に合います";
     case "走り":
       return "走れば間に合います";
     default:

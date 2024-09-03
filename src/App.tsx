@@ -32,7 +32,7 @@ function App() {
   return (
     <div style={{ minHeight: "100%" }}>
       {/* ヘッダー */}
-      <Heder updateTime={trainInfoList?.update_time} Get={get} />
+      <Heder updateTime={trainInfoList?.update_time} Get={get}/>
       <span className="border"></span>
       <main>
         {/* 淀屋橋・中之島線方面 */}
@@ -60,8 +60,17 @@ function App() {
 
           {/* 2電車目 */}
           <TrainInfoComp trainInfo={trainInfoList?.sanjo_direction[1]} />
-        </div>
         <span className="border"></span>
+        </div>
+        <div style={{
+        padding: '10px',
+        border: '1px solid #ccc',
+        borderRadius: '8px',
+        fontSize:"15px",
+      }}>
+          <p className={(trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。" ? "white" : "red")}>{trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。" ? "現在３０分以上の遅延はございません。" : "現在遅延が発生しています。"}</p>
+          <p>{trainInfoList?.update_time} 更新</p>
+        </div>
         <ErrorModal isOpen={open} handleClose={handleClose} />
       </main>
       {/* フッター */}
