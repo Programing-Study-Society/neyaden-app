@@ -1,4 +1,4 @@
-use chrono::{Local, Timelike};
+use chrono::{Timelike};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
@@ -24,6 +24,7 @@ pub struct TrainInfo {
 	pub update_time: String,
 	pub yodoyabashi_direction: Vec<DepartureInfo>,
 	pub sanjo_direction: Vec<DepartureInfo>,
+	pub delay_msg: String,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -71,6 +72,28 @@ struct ReceiveTrainPosition {
 struct ReceiveMovementInfo {
 	file_created_time: String,
 	location_objects: Vec<ReceiveTrainPosition>,
+}
+
+/* 遅延情報等の情報ファイルリスト */
+#[derive(Deserialize, Debug)]
+struct ReceiveInfoFiles {
+	#[serde(rename="traininfo")]
+	train_info: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct ReceiveDelayInfo {
+    info: Info,
+}
+
+#[derive(Debug, Deserialize)]
+struct Info {
+    HPDelivery: HPDelivery,
+}
+
+#[derive(Debug, Deserialize)]
+struct HPDelivery {
+    msg: String,
 }
 
 fn find_neyagawa_station_info(station_list: &[ReceiveStationInfo]) -> Option<&ReceiveStationInfo> {
@@ -267,6 +290,25 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 		.map_err(|_| "情報の取得に失敗しました")?;
 	let movement_info = serde_json::from_str::<ReceiveMovementInfo>(&movement_info_res).unwrap();
 
+	const INFO_FILES_URL: &str = "https://www.keihan.co.jp/tinfo/05-flist/FileList.xml";
+	let info_files_res = reqwest::get(INFO_FILES_URL)
+		.await
+		.map_err(|_| "情報の取得に失敗しました")?
+		.text()
+		.await
+		.map_err(|_| "情報の取得に失敗しました")?;
+
+	let info_files = serde_xml_rs::from_str::<ReceiveInfoFiles>(&info_files_res).unwrap();
+	let delay_xml_res = reqwest::get(format!("{}{}", "https://www.keihan.co.jp/tinfo/01-traininfo/", &info_files.train_info))
+		.await
+		.map_err(|_| "情報の取得に失敗しました")?
+		.text()
+		.await
+		.map_err(|_| "情報の取得に失敗しました")?;
+	let delay_xml = serde_xml_rs::from_str::<ReceiveDelayInfo>(&delay_xml_res).unwrap();
+	println!("{:?}", &delay_xml);
+	
+
 	let mut train_info_list_only_neyagawa = train_timetable
 		.train_info
 		.iter()
@@ -350,6 +392,7 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 			.filter(|train| train.train_direction == "0")
 			.map(|arrival_info| arrival_info.clone())
 			.collect::<Vec<DepartureInfo>>(),
+		delay_msg: delay_xml.info.HPDelivery.msg.clone(),
 	};
 
 	train_dep_info_from_neyagawa.yodoyabashi_direction = train_dep_info_from_neyagawa

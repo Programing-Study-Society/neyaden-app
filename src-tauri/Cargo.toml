@@ -19,6 +19,7 @@ reqwest = "0.12.7"
 anyhow = "1.0.86"
 chrono = "0.4.38"
 itertools = "0.13.0"
+serde-xml-rs = "0.6.0"
 
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
