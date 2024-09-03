@@ -29,6 +29,7 @@ export interface TrainInfo {
 
 export interface TrainInfoList {
   update_time: string;
+  delay_msg: string;
   yodoyabashi_direction: TrainInfo[];
   sanjo_direction: TrainInfo[];
 }

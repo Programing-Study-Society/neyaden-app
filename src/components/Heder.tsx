@@ -6,7 +6,7 @@ interface Props {
 }
 
 // ヘッダー部分のコンポーネント
-function Heder({ updateTime, Get }: Props) {
+function Heder({ updateTime, Get}: Props) {
   return (
     <header>
       <div className="flex">

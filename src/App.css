@@ -132,5 +132,4 @@ footer div {
 .ori {
     white-space: pre-wrap; /* テキストの折り返しを許可 */
     word-wrap: break-word; /* 単語を折り返す */
-    line-height: 1; /* 行間を設定して読みやすくする */
 }
