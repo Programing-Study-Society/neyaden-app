@@ -63,10 +63,10 @@ function App() {
         <span className="border"></span>
         </div>
         <div style={{
-        padding: '10px',
+        padding: '5px',
         border: '1px solid #ccc',
         borderRadius: '8px',
-        fontSize:"15px",
+        fontSize:"2.3vh",
       }}>
           <p className={(trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。" ? "white" : "red")}>{trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。" ? "現在３０分以上の遅延はございません。" : "現在遅延が発生しています。"}</p>
           <p>{trainInfoList?.update_time} 更新</p>

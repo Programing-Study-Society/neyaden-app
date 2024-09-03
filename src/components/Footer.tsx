@@ -2,7 +2,7 @@
 function Footer() {
   return (
     <footer className="flex">
-      <div className="ori" style={{fontSize:"10px", lineHeight: "1"}}>
+      <div className="ori" style={{fontSize:"1.25vh", lineHeight: "1"}}>
         <p style={{wordWrap:"break-word"}}>このアプリはプログラミング研究会が作成しました。</p>
         <p>プログラミング研究会は情報通信工学部・情報工学科の融資が設立した団体です。</p>
         <p>プログラミング研究会では、授業で教わる知識をもとに、ゲームを作ったり勉強会を開いたり様々なITにまつわる活動を行っています。</p>
