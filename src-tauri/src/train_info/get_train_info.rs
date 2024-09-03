@@ -1,4 +1,4 @@
-use chrono::{Timelike};
+use chrono::Timelike;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
@@ -77,32 +77,30 @@ struct ReceiveMovementInfo {
 /* 遅延情報等の情報ファイルリスト */
 #[derive(Deserialize, Debug)]
 struct ReceiveInfoFiles {
-	#[serde(rename="traininfo")]
+	#[serde(rename = "traininfo")]
 	train_info: String,
 }
 
 #[derive(Debug, Deserialize)]
 struct ReceiveDelayInfo {
-    info: Info,
+	info: Info,
 }
 
 #[derive(Debug, Deserialize)]
 struct Info {
-    HPDelivery: HPDelivery,
+	#[serde(rename = "HPDelivery")]
+	hpdelivery: HPDelivery,
 }
 
 #[derive(Debug, Deserialize)]
 struct HPDelivery {
-    msg: String,
+	msg: String,
 }
 
 fn find_neyagawa_station_info(station_list: &[ReceiveStationInfo]) -> Option<&ReceiveStationInfo> {
-	for station in station_list {
-		if station.station_name_jp == "寝屋川市" {
-			return Some(station);
-		}
-	}
-	None
+	station_list
+		.iter()
+		.find(|station| station.station_name_jp == "寝屋川市")
 }
 
 fn zero_padding(time_num: i32) -> String {
@@ -134,20 +132,20 @@ fn parse_datetime_from_train_time(train_time: &str) -> chrono::DateTime<chrono::
 		&format!(
 			"{} {}:{}:0 +0900",
 			&(now + chrono::Duration::days(add_day))
-				.format(&TIME_FORMAT)
+				.format(TIME_FORMAT)
 				.to_string()
 				.split(" ")
 				.collect::<Vec<&str>>()[0],
 			zero_padding(train_time_hour),
 			zero_padding(train_time_minutes),
 		),
-		&TIME_FORMAT,
+		TIME_FORMAT,
 	)
 	.unwrap()
 }
 
 fn convert_receive_train_info_to_arrival_info(
-	train_info_list: &Vec<ReceiveTrainInfo>,
+	train_info_list: &[ReceiveTrainInfo],
 	movement_info: &ReceiveMovementInfo,
 ) -> Vec<DepartureInfo> {
 	struct DirectionAndStartStation {
@@ -169,11 +167,9 @@ fn convert_receive_train_info_to_arrival_info(
 	let direction_list_from_station = START_STATION
 		.iter()
 		.zip(DIRECTION_LIST.iter())
-		.map(|start_station_and_direction| {
-			return DirectionAndStartStation {
-				start_station: start_station_and_direction.0.to_string(),
-				direction: start_station_and_direction.1.to_string(),
-			};
+		.map(|start_station_and_direction| DirectionAndStartStation {
+			start_station: start_station_and_direction.0.to_string(),
+			direction: start_station_and_direction.1.to_string(),
 		})
 		.collect::<Vec<DirectionAndStartStation>>();
 
@@ -187,12 +183,6 @@ fn convert_receive_train_info_to_arrival_info(
 				.location_objects
 				.iter()
 				.filter(|movement_train_info| {
-					// for train_position_object in &movement_info_train.train_info_objects {
-					// 	if train_position_object.wdf_block_no == train.wdf_block_no {
-					// 		return true;
-					// 	}
-					// }
-					// false
 					let train_position_objects = movement_train_info
 						.train_info_objects
 						.iter()
@@ -200,29 +190,31 @@ fn convert_receive_train_info_to_arrival_info(
 							train_position_object.wdf_block_no == train.wdf_block_no
 						})
 						.collect::<Vec<&ReceiveTrainPositionObject>>();
-					if train_position_objects.len() > 1 {
-						println!(
-							"wdf: {} at {}",
-							train_position_objects[0].wdf_block_no,
-							chrono::Local::now()
-						);
-						true
-					} else if train_position_objects.len() == 1 {
-						true
-					} else {
-						false
+					match train_position_objects.len() {
+						len if len > 1 => {
+							println!(
+								"wdf: {} at {}",
+								train_position_objects[0].wdf_block_no,
+								chrono::Local::now()
+							);
+							true
+						}
+						1 => true,
+						_ => false,
 					}
 				})
 				.collect::<Vec<_>>();
 
-			let exist_bound_info = movement_train_info.len() != 0;
+			let exist_bound_info = !movement_train_info.is_empty();
 			let plan_departure_time =
 				parse_datetime_from_train_time(&neyagawa_arrival_info.station_dep_time)
-					- chrono::Duration::minutes(if exist_bound_info && movement_train_info[0].delay != "" {
-						movement_train_info[0].delay.parse::<i64>().unwrap()
-					} else {
-						0
-					});
+					- chrono::Duration::minutes(
+						if exist_bound_info && (!movement_train_info[0].delay.is_empty()) {
+							movement_train_info[0].delay.parse::<i64>().unwrap()
+						} else {
+							0
+						},
+					);
 			return DepartureInfo {
 				plan_departure_time: format!(
 					"{}:{}",
@@ -253,11 +245,7 @@ fn convert_receive_train_info_to_arrival_info(
 						.direction
 						.clone(),
 				},
-				is_delayed: if exist_bound_info && movement_train_info[0].delay != "" {
-					true
-				} else {
-					false
-				},
+				is_delayed: exist_bound_info && (!movement_train_info[0].delay.is_empty()),
 				delay_time: match exist_bound_info {
 					true => movement_train_info[0].train_info_objects[0]
 						.delay_minutes
@@ -299,15 +287,17 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 		.map_err(|_| "情報の取得に失敗しました")?;
 
 	let info_files = serde_xml_rs::from_str::<ReceiveInfoFiles>(&info_files_res).unwrap();
-	let delay_xml_res = reqwest::get(format!("{}{}", "https://www.keihan.co.jp/tinfo/01-traininfo/", &info_files.train_info))
-		.await
-		.map_err(|_| "情報の取得に失敗しました")?
-		.text()
-		.await
-		.map_err(|_| "情報の取得に失敗しました")?;
+	let delay_xml_res = reqwest::get(format!(
+		"{}{}",
+		"https://www.keihan.co.jp/tinfo/01-traininfo/", &info_files.train_info
+	))
+	.await
+	.map_err(|_| "情報の取得に失敗しました")?
+	.text()
+	.await
+	.map_err(|_| "情報の取得に失敗しました")?;
 	let delay_xml = serde_xml_rs::from_str::<ReceiveDelayInfo>(&delay_xml_res).unwrap();
 	println!("{:?}", &delay_xml);
-	
 
 	let mut train_info_list_only_neyagawa = train_timetable
 		.train_info
@@ -324,7 +314,7 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 				.dia_station_info_objects
 				.iter()
 				.filter(|&station| station.station_dep_time != "99:99")
-				.map(|station| station.clone())
+				.cloned()
 				.collect::<Vec<ReceiveStationInfo>>(),
 		})
 		// 寝屋川市に止まる電車のみを取得
@@ -337,7 +327,6 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 					.station_dep_time,
 			) > chrono::Local::now() + chrono::Duration::minutes(RUNNING_MINUTES as i64)
 		})
-		.map(|train| train.clone())
 		.collect::<Vec<ReceiveTrainInfo>>();
 
 	// 日付順にソート
@@ -348,8 +337,8 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 		let b_arrive_time_string = &find_neyagawa_station_info(&b.dia_station_info_objects)
 			.unwrap()
 			.station_dep_time;
-		let a_arrive_time = parse_datetime_from_train_time(&a_arrive_time_string);
-		let b_arrive_time = parse_datetime_from_train_time(&b_arrive_time_string);
+		let a_arrive_time = parse_datetime_from_train_time(a_arrive_time_string);
+		let b_arrive_time = parse_datetime_from_train_time(b_arrive_time_string);
 		a_arrive_time.cmp(&b_arrive_time)
 	});
 
@@ -357,7 +346,7 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 		convert_receive_train_info_to_arrival_info(&train_info_list_only_neyagawa, &movement_info)
 			.iter()
 			.filter(|arrival_info| arrival_info.terminal_station != "寝屋川市")
-			.map(|arrival_info| arrival_info.clone())
+			.cloned()
 			.collect::<Vec<DepartureInfo>>();
 
 	train_dep_info_list.iter_mut().for_each(|arrival_info| {
@@ -384,15 +373,15 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 			.iter()
 			// 淀屋橋方面に絞る
 			.filter(|train| train.train_direction == "1")
-			.map(|arrival_info| arrival_info.clone())
+			.cloned()
 			.collect::<Vec<DepartureInfo>>(),
 		sanjo_direction: train_dep_info_list
 			.iter()
 			// 三条方面に絞る
 			.filter(|train| train.train_direction == "0")
-			.map(|arrival_info| arrival_info.clone())
+			.cloned()
 			.collect::<Vec<DepartureInfo>>(),
-		delay_msg: delay_xml.info.HPDelivery.msg.clone(),
+		delay_msg: delay_xml.info.hpdelivery.msg.clone(),
 	};
 
 	train_dep_info_from_neyagawa.yodoyabashi_direction = train_dep_info_from_neyagawa
