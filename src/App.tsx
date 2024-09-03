@@ -60,8 +60,17 @@ function App() {
 
           {/* 2電車目 */}
           <TrainInfoComp trainInfo={trainInfoList?.sanjo_direction[1]} />
-        </div>
         <span className="border"></span>
+        </div>
+        <div style={{
+        padding: '10px',
+        border: '1px solid #ccc',
+        borderRadius: '8px',
+        fontSize:"15px",
+      }}>
+          <p>現在３０分以上の遅れはございません。</p>
+          <p>00:00 更新</p>
+        </div>
         <ErrorModal isOpen={open} handleClose={handleClose} />
       </main>
       {/* フッター */}

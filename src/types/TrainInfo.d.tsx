@@ -68,7 +68,7 @@ export const GetTrainTypeColor = function (trainType: TRAIN_TYPE) {
 export const GetTravelMode = function (mode: TRAVEl_MODE) {
   switch (mode) {
     case "歩き":
-      return "歩きで間に合います";
+      return "歩いても間に合います";
     case "走り":
       return "走れば間に合います";
     default:
