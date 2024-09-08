@@ -30,49 +30,51 @@ function App() {
   }
 
   return (
-    <div style={{ minHeight: "100%" }}>
-      {/* ヘッダー */}
-      <Heder updateTime={trainInfoList?.update_time} Get={get}/>
-      <span className="border"></span>
-      <main>
-        {/* 淀屋橋・中之島線方面 */}
-        <div>
-          <div className="flex-right">
-            <h1 className="direction-name">淀屋橋・中之島線</h1>
-            <h3>方面</h3>
-          </div>
-          {/* 1電車目 */}
-          <TrainInfoComp trainInfo={trainInfoList?.yodoyabashi_direction[0]} />
-
-          {/* 2電車目 */}
-          <TrainInfoComp trainInfo={trainInfoList?.yodoyabashi_direction[1]} />
-        </div>
+    <div className="content-wrapper" style={{ minHeight: "100%" }}>
+      <div className="content">
+        {/* ヘッダー */}
+        <Heder updateTime={trainInfoList?.update_time} Get={get}/>
         <span className="border"></span>
+        <main>
+          {/* 淀屋橋・中之島線方面 */}
+          <div>
+            <div className="flex-right">
+              <h1 className="direction-name">淀屋橋・中之島線</h1>
+              <h3>方面</h3>
+            </div>
+            {/* 1電車目 */}
+            <TrainInfoComp trainInfo={trainInfoList?.yodoyabashi_direction[0]} />
 
-        {/* 三条・出町柳方面 */}
-        <div>
-          <div className="flex-right">
-            <h1 className="direction-name">三条・出町柳</h1>
-            <h3>方面</h3>
+            {/* 2電車目 */}
+            <TrainInfoComp trainInfo={trainInfoList?.yodoyabashi_direction[1]} />
           </div>
-          {/* 1電車目 */}
-          <TrainInfoComp trainInfo={trainInfoList?.sanjo_direction[0]} />
+          <span className="border"></span>
 
-          {/* 2電車目 */}
-          <TrainInfoComp trainInfo={trainInfoList?.sanjo_direction[1]} />
-        <span className="border"></span>
-        </div>
-        <div style={{
-        padding: '5px',
-        border: '1px solid #ccc',
-        borderRadius: '8px',
-        fontSize:"2.3vh",
-      }}>
-          <p className={(trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。" ? "white" : "red")}>{trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。" ? "現在３０分以上の遅延はございません。" : "現在遅延が発生しています。"}</p>
-          <p>{trainInfoList?.update_time} 更新</p>
-        </div>
-        <ErrorModal isOpen={open} handleClose={handleClose} />
-      </main>
+          {/* 三条・出町柳方面 */}
+          <div>
+            <div className="flex-right">
+              <h1 className="direction-name">三条・出町柳</h1>
+              <h3>方面</h3>
+            </div>
+            {/* 1電車目 */}
+            <TrainInfoComp trainInfo={trainInfoList?.sanjo_direction[0]} />
+
+            {/* 2電車目 */}
+            <TrainInfoComp trainInfo={trainInfoList?.sanjo_direction[1]} />
+          <span className="border"></span>
+          </div>
+          <div style={{
+          padding: '5px',
+          border: '1px solid #ccc',
+          borderRadius: '8px',
+          fontSize:"2.3vh",
+        }}>
+            <p className={(trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。" ? "white" : "red")}>{trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。" ? "現在３０分以上の遅延はございません。" : "現在遅延が発生しています。"}</p>
+            <p>{trainInfoList?.update_time} 更新</p>
+          </div>
+          <ErrorModal isOpen={open} handleClose={handleClose} />
+        </main>
+      </div>
       {/* フッター */}
       <Footer />
     </div>
