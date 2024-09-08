@@ -13,7 +13,7 @@ const imageLinks = [
 function Footer() {
   return (
     <footer >
-      <div className="ori" style={{fontSize:"1.25vh", lineHeight: "1", padding: "25px"}}>
+      <div className="ori" style={{fontSize:"1.25vh", lineHeight: "1", padding: "1.1vmin"}}>
         <p style={{wordWrap:"break-word"}}>このアプリはプログラミング研究会が作成しました。</p>
         <p>プログラミング研究会では、授業で教わる知識をもとに、ゲームを作ったり勉強会を開いたり様々なITにまつわる活動を行っています。</p>
         <p>部員募集中！！</p>
