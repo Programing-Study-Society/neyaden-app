@@ -22,7 +22,7 @@
         "title": "neyaden",
         "width": 360,
         "height": 640,
-        "fullscreen": false,
+        "fullscreen": true,
         "decorations": true
       }
     ],
