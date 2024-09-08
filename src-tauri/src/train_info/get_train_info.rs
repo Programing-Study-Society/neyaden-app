@@ -3,7 +3,7 @@ use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 const WALKING_MINUTES: u16 = 16;
-const RUNNING_MINUTES: u16 = 11;
+const RUNNING_MINUTES: u16 = 10;
 const TIME_FORMAT: &str = "%Y/%m/%d %H:%M:%S %z";
 
 #[derive(Serialize, Debug, Clone)]
