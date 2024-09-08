@@ -24,7 +24,7 @@ export default function MySlider(props: props) {
       speed={750}
       loop={true}
       pagination={{ clickable: true }}
-      style={{width: size, height: size, borderRadius: "0.75vmin"}}
+      style={{width: `calc(${size} * 2.0)`, height: size, borderRadius: "0.75vmin"}}
     >
       {props.slideImageLinks.map((imageLink, idx) => 
         <SwiperSlide key={idx} style={{height: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
