@@ -18,8 +18,9 @@ function Footer() {
         <p>プログラミング研究会では、授業で教わる知識をもとに、ゲームを作ったり勉強会を開いたり様々なITにまつわる活動を行っています。</p>
         <p>部員募集中！！</p>
       </div>
-      <MySlider size="70%" slideImageLinks={imageLinks} />
-    </footer>
+      <MySlider size="62.5%" slideImageLinks={imageLinks} />
+      <p style={{fontSize:"1.25vh", textAlign: 'right', marginRight: '0.25vw'}}>何かあれば proken0603@gmail.com まで</p>
+      </footer>
   );
 }
 
