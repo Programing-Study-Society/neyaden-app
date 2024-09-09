@@ -37,7 +37,7 @@ function App() {
         <span className="border"></span>
         <main>
           {/* 淀屋橋・中之島線方面 */}
-          <div>
+          <div className="train-info-container">
             <div className="flex-right">
               <h1 className="direction-name">淀屋橋・中之島線</h1>
               <h3>方面</h3>
@@ -51,7 +51,7 @@ function App() {
           <span className="border"></span>
 
           {/* 三条・出町柳方面 */}
-          <div>
+          <div className="train-info-container">
             <div className="flex-right">
               <h1 className="direction-name">三条・出町柳</h1>
               <h3>方面</h3>
@@ -61,16 +61,19 @@ function App() {
 
             {/* 2電車目 */}
             <TrainInfoComp trainInfo={trainInfoList?.sanjo_direction[1]} />
-          <span className="border"></span>
           </div>
+          <span className="border"></span>
           <div style={{
-          padding: '5px',
-          border: '1px solid #ccc',
-          borderRadius: '8px',
-          fontSize:"2.3vh",
-        }}>
-            <p className={(trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。" ? "white" : "red")}>{trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。" ? "現在３０分以上の遅延はございません。" : "現在遅延が発生しています。"}</p>
-            <p>{trainInfoList?.update_time} 更新</p>
+            padding: '5px',
+            border: '1px solid #ccc',
+            borderRadius: '8px',
+          }}>
+            <p className={(trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。" ? "white" : "red")} style={{lineHeight: "1rem", margin: "1vh", fontSize:"3vmin"}}>
+              {trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。" 
+                ? "現在３０分以上の遅延はございません。" 
+                : "現在遅延が発生しています。"}
+            </p>
+            <p style={{textAlign: "end", lineHeight: "1rem", margin: "1vh", fontSize:"2.25vmin"}}>{trainInfoList?.update_time} 更新</p>
           </div>
           <ErrorModal isOpen={open} handleClose={handleClose} />
         </main>
