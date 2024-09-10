@@ -64,7 +64,8 @@ function App() {
           </div>
           <span className="border"></span>
           <div style={{
-            padding: '5px',
+            margin: "2vh 0",
+            padding: '20px',
             border: '1px solid #ccc',
             borderRadius: '8px',
           }}>
