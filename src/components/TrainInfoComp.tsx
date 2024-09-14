@@ -24,7 +24,7 @@ function TrainInfoComp({ trainInfo }: { trainInfo: TrainInfo | undefined }) {
         </h2>
         <h2>{trainInfo?.terminal_station}行き</h2>
         <h2 className={"red " + (trainInfo.is_delayed ? "" : "display-none")}>
-          遅延{trainInfo.delay_time}分
+          {trainInfo.delay_time}
         </h2>
       </div>
       <div className="flex">
