@@ -4,7 +4,7 @@
 }
 
 :root {
-  --font-size:clamp(0px, 2.85vmin, 2.9vh);
+  --font-size: clamp(0px, 2.85vmin, 2.9vh);
 }
 
 body {
@@ -13,8 +13,8 @@ body {
   font-family: "notoSansJP-Regular";
   line-height: 0px;
   font-size: var(--font-size);
-  height: calc(100% - 16px);
-  width: calc(100% - 16px);
+  height: calc(100vh - 16px);
+  width: calc(100vw - 16px);
 }
 
 #root {
@@ -23,12 +23,14 @@ body {
 }
 
 .content-wrapper {
-  display:flex;
+  display: flex;
   flex-flow: column;
+  align-items: center;
 }
 
 .content {
   flex: 1;
+  width: 95%;
 }
 
 main {
@@ -50,7 +52,7 @@ main {
 }
 
 .direction-name {
-  font-size:7vmin;
+  font-size: 7vmin;
 }
 
 .border {
@@ -94,16 +96,11 @@ main {
   text-decoration-style: double;
 }
 
-:root {
-  --footer-height:65vmin;
-  --footer-font-size:clamp(0px, 4vmin, 2.9vh);
-}
-
 footer {
-  grid-row-start: 2;
-  grid-row-end: 3;
-  width: 100%;
-  height: var(--footer-height);
+  display: block;
+  /* grid-row-start: 0; */
+  /* grid-row-end: -1; */
+  width: 95%;
 }
 
 .black {
@@ -143,6 +140,8 @@ footer {
 }
 
 .ori {
-    white-space: pre-wrap; /* テキストの折り返しを許可 */
-    word-wrap: break-word; /* 単語を折り返す */
+  white-space: pre-wrap;
+  /* テキストの折り返しを許可 */
+  word-wrap: break-word;
+  /* 単語を折り返す */
 }
