@@ -35,7 +35,8 @@ export interface TrainInfoList {
 }
 
 export const GetTrainTypeColor = function (trainType: TRAIN_TYPE) {
-  switch (trainType) {
+  const cleanedTrainType = trainType.replace(/臨時\s+/g, '');
+  switch (cleanedTrainType) {
     case "快速特急 洛楽":
       return "pink";
     case "特急":
