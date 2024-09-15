@@ -70,8 +70,8 @@ function App() {
             borderRadius: '8px',
           }}>
             <p className={(trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。" ? "white" : "red")} style={{lineHeight: "1rem", margin: "1vh", fontSize:"3vmin"}}>
-              {trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。" 
-                ? "現在３０分以上の遅延はございません。" 
+              {trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。"
+                ? "現在３０分以上の遅延はございません。"
                 : "現在遅延が発生しています。"}
             </p>
             <p style={{textAlign: "end", lineHeight: "1rem", margin: "1vh", fontSize:"2.25vmin"}}>{trainInfoList?.update_time} 更新</p>
