@@ -272,14 +272,6 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 	.await
 	.map_err(|_| "情報の取得に失敗しました")?;
 
-	// use std::fs::File;
-	// use std::io::prelude::*;
-	// let mut f = File::open("E:\\はろやん\\Downloads\\Phone Link\\traininfo20240923132246.xml")
-	// 	.expect("file not found");
-	// let mut delay_xml_res = String::new();
-	// f.read_to_string(&mut delay_xml_res)
-	// 	.expect("something went wrong reading the file");
-
 	let delay_xml =
 		serde_xml_rs::from_str::<delay_info_structs::ReceiveDelayInfo>(&delay_xml_res).unwrap();
 
