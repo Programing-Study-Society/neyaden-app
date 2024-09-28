@@ -2,6 +2,8 @@ use chrono::Timelike;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
+use crate::train_info::delay_info_structs;
+
 const WALKING_MINUTES: u16 = 16;
 const RUNNING_MINUTES: u16 = 10;
 const TIME_FORMAT: &str = "%Y/%m/%d %H:%M:%S %z";
@@ -24,7 +26,7 @@ pub struct TrainInfo {
 	pub update_time: String,
 	pub yodoyabashi_direction: Vec<DepartureInfo>,
 	pub sanjo_direction: Vec<DepartureInfo>,
-	pub delay_msg: String,
+	pub is_stopped: bool,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -79,22 +81,6 @@ struct ReceiveMovementInfo {
 struct ReceiveInfoFiles {
 	#[serde(rename = "traininfo")]
 	train_info: String,
-}
-
-#[derive(Debug, Deserialize)]
-struct ReceiveDelayInfo {
-	info: Info,
-}
-
-#[derive(Debug, Deserialize)]
-struct Info {
-	#[serde(rename = "HPDelivery")]
-	hpdelivery: HPDelivery,
-}
-
-#[derive(Debug, Deserialize)]
-struct HPDelivery {
-	msg: String,
 }
 
 fn find_neyagawa_station_info(station_list: &[ReceiveStationInfo]) -> Option<&ReceiveStationInfo> {
@@ -285,7 +271,17 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 	.text()
 	.await
 	.map_err(|_| "情報の取得に失敗しました")?;
-	let delay_xml = serde_xml_rs::from_str::<ReceiveDelayInfo>(&delay_xml_res).unwrap();
+
+	// use std::fs::File;
+	// use std::io::prelude::*;
+	// let mut f = File::open("E:\\はろやん\\Downloads\\Phone Link\\traininfo20240923132246.xml")
+	// 	.expect("file not found");
+	// let mut delay_xml_res = String::new();
+	// f.read_to_string(&mut delay_xml_res)
+	// 	.expect("something went wrong reading the file");
+
+	let delay_xml =
+		serde_xml_rs::from_str::<delay_info_structs::ReceiveDelayInfo>(&delay_xml_res).unwrap();
 
 	let mut train_info_list_only_neyagawa = train_timetable
 		.train_info
@@ -351,6 +347,17 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 		a_arrive_time.cmp(&b_arrive_time)
 	});
 
+	// 京阪本線が運行休止中は寝屋川市も止まっているため本線が休止しているか確認
+	let mut is_stopped = delay_xml.info.dif.all != 0;
+	if is_stopped {
+		is_stopped = delay_xml.info.dif.eif.unwrap().iter().any(|eif| {
+			eif
+				.lin
+				.iter()
+				.any(|lin| lin.nm.iter().any(|nm| nm.value.contains("京阪本線")))
+		})
+	}
+
 	let mut train_dep_info_from_neyagawa = TrainInfo {
 		update_time: format!(
 			"{}:{}",
@@ -369,7 +376,7 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 			.filter(|train| train.train_direction == "0")
 			.cloned()
 			.collect::<Vec<DepartureInfo>>(),
-		delay_msg: delay_xml.info.hpdelivery.msg.clone(),
+		is_stopped,
 	};
 
 	train_dep_info_from_neyagawa.yodoyabashi_direction = train_dep_info_from_neyagawa
