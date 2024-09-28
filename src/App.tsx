@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import { TrainInfoList } from "./types/TrainInfo.d.tsx";
+import StopRunningModal from "./components/StopRunningModal.tsx";
 import ErrorModal from "./components/ErrorModal.tsx";
 import TrainInfoComp from "./components/TrainInfoComp.tsx";
 import Heder from "./components/Heder.tsx";
@@ -11,9 +12,12 @@ import "./App.css";
 function App() {
   // 変数定義
   const [trainInfoList, setTrainInfoList] = useState<TrainInfoList>();
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [stopRunningOpen, setStopRunningOpen] = useState(false);
+  const ErrorHandleOpen = () => setErrorOpen(true);
+  const ErrorHandleClose = () => setErrorOpen(false);
+  const StopRunningHandleOpen = () => setStopRunningOpen(true);
+  const StopRunningHandleClose = () => setStopRunningOpen(false);
 
   // 電車情報を取得する関数
   function get() {
@@ -21,11 +25,23 @@ function App() {
       .then((res) => {
         console.log(res);
         setTrainInfoList(res);
-        handleClose();
+
+        // モーダル系の処理
+        if (res.is_stopped) {
+          StopRunningHandleOpen();
+        } else {
+          StopRunningHandleClose();
+        }
+        ErrorHandleClose();
+
+        // モーダルテスト用
+        // ErrorHandleOpen();
+        // StopRunningHandleOpen();
       })
       .catch((e) => {
         console.log(e);
-        handleOpen();
+        StopRunningHandleClose();
+        ErrorHandleOpen();
       });
   }
 
@@ -33,7 +49,7 @@ function App() {
     <div className="content-wrapper" style={{ minHeight: "100%" }}>
       <div className="content">
         {/* ヘッダー */}
-        <Heder updateTime={trainInfoList?.update_time} Get={get}/>
+        <Heder updateTime={trainInfoList?.update_time} Get={get} />
         <span className="border"></span>
         <main>
           {/* 淀屋橋・中之島線方面 */}
@@ -43,10 +59,14 @@ function App() {
               <h3>方面</h3>
             </div>
             {/* 1電車目 */}
-            <TrainInfoComp trainInfo={trainInfoList?.yodoyabashi_direction[0]} />
+            <TrainInfoComp
+              trainInfo={trainInfoList?.yodoyabashi_direction[0]}
+            />
 
             {/* 2電車目 */}
-            <TrainInfoComp trainInfo={trainInfoList?.yodoyabashi_direction[1]} />
+            <TrainInfoComp
+              trainInfo={trainInfoList?.yodoyabashi_direction[1]}
+            />
           </div>
           <span className="border"></span>
 
@@ -63,20 +83,38 @@ function App() {
             <TrainInfoComp trainInfo={trainInfoList?.sanjo_direction[1]} />
           </div>
           <span className="border"></span>
-          <div style={{
-            margin: "2vh 0",
-            padding: '20px',
-            border: '1px solid #ccc',
-            borderRadius: '8px',
-          }}>
-            <p className={(trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。" ? "white" : "red")} style={{lineHeight: "1rem", margin: "1vh", fontSize:"3vmin"}}>
-              {trainInfoList?.delay_msg == "現在３０分以上の遅れはございません。"
-                ? "現在３０分以上の遅延はございません。"
-                : "現在遅延が発生しています。"}
+          <div
+            style={{
+              margin: "2vh 0",
+              padding: "20px",
+              border: "1px solid #ccc",
+              borderRadius: "8px",
+            }}
+          >
+            <p
+              className={trainInfoList?.is_stopped ? "red" : "white"}
+              style={{ lineHeight: "1rem", margin: "1vh", fontSize: "3vmin" }}
+            >
+              {trainInfoList?.is_stopped
+                ? "現在遅延が発生しています。詳しくは公式サイトを確認してください。"
+                : "現在３０分以上の遅延はありません。"}
             </p>
-            <p style={{textAlign: "end", lineHeight: "1rem", margin: "1vh", fontSize:"2.25vmin"}}>{trainInfoList?.update_time} 更新</p>
+            <p
+              style={{
+                textAlign: "end",
+                lineHeight: "1rem",
+                margin: "1vh",
+                fontSize: "2.25vmin",
+              }}
+            >
+              {trainInfoList?.update_time} 更新
+            </p>
           </div>
-          <ErrorModal isOpen={open} handleClose={handleClose} />
+          <StopRunningModal
+            isOpen={stopRunningOpen}
+            handleClose={StopRunningHandleClose}
+          />
+          <ErrorModal isOpen={errorOpen} handleClose={ErrorHandleClose} />
         </main>
       </div>
       {/* フッター */}
