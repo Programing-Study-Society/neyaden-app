@@ -7,8 +7,8 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 400,
-  height: 480,
+  width: "60vmin",
+  height: "72vmin",
   display: "flex",
   alignItems: "center",
   justifyContent: "center", // 水平方向に中央揃え
@@ -39,7 +39,7 @@ function StopRunningModal({ isOpen, handleClose }: Props) {
               fontSize: "100px",
               display: "block",
               margin: "0 auto",
-              transform: "translateY(15%)",
+              transform: "translateY(-5%)",
             }}
             className="red"
           />
@@ -64,7 +64,7 @@ function StopRunningModal({ isOpen, handleClose }: Props) {
               style={{
                 display: "block",
                 margin: "auto",
-                transform: "translateY(-5%)",
+                transform: "translateY(5%)",
               }}
             />
           </Typography>
