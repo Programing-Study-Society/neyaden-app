@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
-import { TrainInfoList } from "./types/TrainInfo.d.tsx";
+import { TrainInfoList, StopTrainInfo} from "./types/TrainInfo.d.tsx";
 import StopRunningModal from "./components/StopRunningModal.tsx";
 import ErrorModal from "./components/ErrorModal.tsx";
 import TrainInfoComp from "./components/TrainInfoComp.tsx";
@@ -12,6 +12,7 @@ import "./App.css";
 function App() {
   // 変数定義
   const [trainInfoList, setTrainInfoList] = useState<TrainInfoList>();
+  const [stopTrainInfo, setStopTrainInfo] = useState<StopTrainInfo>();
   const [errorOpen, setErrorOpen] = useState(false);
   const [stopRunningOpen, setStopRunningOpen] = useState(false);
   const ErrorHandleOpen = () => setErrorOpen(true);
@@ -20,29 +21,37 @@ function App() {
   const StopRunningHandleClose = () => setStopRunningOpen(false);
 
   // 電車情報を取得する関数
-  function get() {
-    invoke<TrainInfoList>("get_train_info")
+  async function get() {
+    try {
+      await invoke<TrainInfoList>("get_train_info")
       .then((res) => {
         console.log(res);
         setTrainInfoList(res);
+      })
+      .catch((e) => {
+        throw e;
+      });
 
-        // モーダル系の処理
-        if (res.is_stopped) {
+      await invoke<StopTrainInfo>("get_stop_train_info")
+      .then((res) => {
+        console.log(res);
+        setStopTrainInfo(res);
+        if (res.keihan) {
           StopRunningHandleOpen();
         } else {
           StopRunningHandleClose();
         }
-        ErrorHandleClose();
-
-        // モーダルテスト用
-        // ErrorHandleOpen();
-        // StopRunningHandleOpen();
       })
       .catch((e) => {
-        console.log(e);
-        StopRunningHandleClose();
-        ErrorHandleOpen();
+        throw e;
       });
+      
+      ErrorHandleClose();
+    } catch(e) {
+      console.log(e);
+      StopRunningHandleClose();
+      ErrorHandleOpen();
+    }
   }
 
   return (
@@ -92,10 +101,10 @@ function App() {
             }}
           >
             <p
-              className={trainInfoList?.is_stopped ? "red" : "white"}
+              className={stopTrainInfo?.keihan ? "red" : "white"}
               style={{ lineHeight: "1rem", margin: "1vh", fontSize: "3vmin" }}
             >
-              {trainInfoList?.is_stopped
+              {stopTrainInfo?.keihan
                 ? "現在遅延が発生しています。詳しくは公式サイトを確認してください。"
                 : "現在３０分以上の遅延はありません。"}
             </p>

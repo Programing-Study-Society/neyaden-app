@@ -29,9 +29,12 @@ export interface TrainInfo {
 
 export interface TrainInfoList {
   update_time: string;
-  is_stopped: boolean;
   yodoyabashi_direction: TrainInfo[];
   sanjo_direction: TrainInfo[];
+}
+
+export interface StopTrainInfo {
+  keihan: boolean;
 }
 
 export const GetTrainTypeColor = function (trainType: TRAIN_TYPE) {
