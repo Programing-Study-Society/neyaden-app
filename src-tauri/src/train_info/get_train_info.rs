@@ -2,8 +2,6 @@ use chrono::Timelike;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
-use crate::train_info::get_stop_train_info::get_stop_keihan_train_info;
-
 const WALKING_MINUTES: u16 = 16;
 const RUNNING_MINUTES: u16 = 10;
 const TIME_FORMAT: &str = "%Y/%m/%d %H:%M:%S %z";
@@ -26,7 +24,6 @@ pub struct TrainInfo {
 	pub update_time: String,
 	pub yodoyabashi_direction: Vec<DepartureInfo>,
 	pub sanjo_direction: Vec<DepartureInfo>,
-	pub is_stopped: bool,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -328,7 +325,6 @@ pub async fn get_train_info() -> Result<TrainInfo, String> {
 			.filter(|train| train.train_direction == "0")
 			.cloned()
 			.collect::<Vec<DepartureInfo>>(),
-		is_stopped: get_stop_keihan_train_info().await?,
 	};
 
 	train_dep_info_from_neyagawa.yodoyabashi_direction = train_dep_info_from_neyagawa
