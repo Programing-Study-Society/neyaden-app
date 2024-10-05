@@ -1,17 +1,48 @@
-use serde::Serialize;
+use serde::Deserialize;
 
-use crate::train_info::stop_train_info_structs::{ReceiveDelayInfo, ReceiveInfoFiles};
-
-#[derive(Debug, Serialize)]
-pub struct StopTrainInfo {
-	pub keihan: bool,
+/* 遅延情報等の情報ファイルリスト */
+#[derive(Deserialize, Debug)]
+pub struct ReceiveInfoFiles {
+	#[serde(rename = "traininfo")]
+	pub train_info: String,
 }
 
-#[tauri::command]
-pub async fn get_stop_train_info() -> Result<StopTrainInfo, String> {
-	Ok(StopTrainInfo {
-		keihan: get_stop_keihan_train_info().await?,
-	})
+#[derive(Debug, Deserialize)]
+pub struct ReceiveDelayInfo {
+	pub info: Info,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Info {
+	pub dif: DIF,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct DIF {
+	pub all: u32,
+	pub eif: Option<Vec<EIF>>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct EIF {
+	pub lin: Vec<Lin>,
+	pub sts: Vec<Sts>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Lin {
+	pub nm: Vec<NM>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Sts {
+	pub nm: Vec<NM>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct NM {
+	#[serde(rename = "$value")]
+	pub value: String,
 }
 
 pub async fn get_stop_keihan_train_info() -> Result<bool, String> {
