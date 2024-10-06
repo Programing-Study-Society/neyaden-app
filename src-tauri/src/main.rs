@@ -8,7 +8,7 @@ async fn main() -> anyhow::Result<()> {
 	tauri::Builder::default()
 		.invoke_handler(tauri::generate_handler![
 			train_info::get_train_info::get_train_info,
-			train_info::get_stop_train_info::get_stop_train_info,
+			train_info::delay_info::get_stop_train_info,
 			// train_info::stab_get_train_info::success_get_train_info,
 			// train_info::stab_get_train_info::failed_get_train_info,
 		])
