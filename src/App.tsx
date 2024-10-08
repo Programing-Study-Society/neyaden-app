@@ -4,9 +4,11 @@ import { TrainInfoList, StopTrainInfo} from "./types/TrainInfo.d.tsx";
 import StopRunningModal from "./components/StopRunningModal.tsx";
 import ErrorModal from "./components/ErrorModal.tsx";
 import TrainInfoComp from "./components/TrainInfoComp.tsx";
+import StopTrain from "./components/StopTrain.tsx";
 import Heder from "./components/Heder.tsx";
 import Footer from "./components/Footer.tsx";
 import "./App.css";
+import { fontSize } from "@mui/system";
 
 // メイン実装部分
 function App() {
@@ -45,7 +47,7 @@ function App() {
       .catch((e) => {
         throw e;
       });
-      
+
       ErrorHandleClose();
     } catch(e) {
       console.log(e);
@@ -95,28 +97,28 @@ function App() {
           <div
             style={{
               margin: "2vh 0",
-              padding: "20px",
+              padding: "15px",
               border: "1px solid #ccc",
               borderRadius: "8px",
             }}
           >
-            <p
-              className={stopTrainInfo?.keihan ? "red" : "white"}
-              style={{ lineHeight: "1rem", margin: "1vh", fontSize: "3vmin" }}
-            >
-              {stopTrainInfo?.keihan
-                ? "現在遅延が発生しています。詳しくは公式サイトを確認してください。"
-                : "現在３０分以上の遅延はありません。"}
-            </p>
+            <div style={{display: "flex", flexDirection: "column"}}>
+              <StopTrain routeNeme={"京阪本線"} routeStatus={stopTrainInfo?.keihan} />
+              <StopTrain routeNeme={"JR大阪環状線"} routeStatus={false} />
+              <StopTrain routeNeme={"JR学研都市線"} routeStatus={true} />
+              <StopTrain routeNeme={"大阪メトロ御堂筋線"} routeStatus={false} />
+              <StopTrain routeNeme={"近鉄京都線"} routeStatus={false} />
+            </div>
             <p
               style={{
+                margin: "0",
+                marginTop: "2vh",
                 textAlign: "end",
                 lineHeight: "1rem",
-                margin: "1vh",
                 fontSize: "2.25vmin",
               }}
             >
-              {trainInfoList?.update_time} 更新
+              {trainInfoList?.update_time} 更新　正確な情報は公式サイトを確認してください
             </p>
           </div>
           <StopRunningModal
@@ -127,7 +129,8 @@ function App() {
         </main>
       </div>
       {/* フッター */}
-      <Footer />
+          <Footer />
+
     </div>
   );
 }

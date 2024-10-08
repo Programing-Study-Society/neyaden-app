@@ -4,7 +4,7 @@ function Footer() {
 		<footer>
 			<div
 				className="ori"
-				style={{ fontSize: "2vmin", lineHeight: "2.5vh", padding: "1.1vmin" }}
+				style={{ fontSize: "2vmin", lineHeight: "2.5vh", padding: "1.1vmin",  marginLeft: "auto",  marginRight: "auto", width: "fit-content"}}
 			>
 				<p style={{ wordWrap: "break-word", margin: "0" }}>
 					この掲示板はプログラミング研究会に所属する情報工学科の有志が作成しました。
@@ -14,10 +14,12 @@ function Footer() {
 					<br />
 					開いたり様々なITにまつわる活動を行っています。
 				</p>
+				<p style={{ wordWrap: "break-word", margin: "0", textAlign:"right"}}>何かあれば proken0603@gmail.com まで</p>
 				<p
 					style={{
 						wordWrap: "break-word",
-						margin: "5vh 0",
+						margin: "2vh 0",
+						marginBottom:"0",
 						textAlign: "center",
 						fontSize: "4vmin",
 						color: "#FF5760",
@@ -28,11 +30,11 @@ function Footer() {
 				</p>
 			</div>
 			{/* <MySlider size="24vh" slideImageLinks={imageLinks} /> */}
-			<p
-				style={{ fontSize: "2vmin", textAlign: "right", marginRight: "0.25vw" }}
-			>
-				何かあれば proken0603@gmail.com まで
-			</p>
+			<div style={{fontSize:"1.0vh", textAlign:"center", marginTop:"2.5vh"}}>
+				<p>情報引用元</p>
+				<p>京阪電車（京阪線） 列車走行位置 (https://www.keihan.co.jp/zaisen/)</p>
+				<p>JR西日本 列車走行位置 (https://www.train-guide.westjr.co.jp/)</p>
+      		</div>
 		</footer>
 	);
 }
